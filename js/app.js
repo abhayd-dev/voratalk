@@ -138,7 +138,7 @@ const App = {
       toast = document.createElement('div');
       toast.id = 'global-toast';
       toast.className = 'global-toast';
-      document.body.appendChild(toast);
+      (document.querySelector('.iphone-bezel') || document.body).appendChild(toast);
     }
     toast.innerHTML = `<span>${message}</span>`;
     toast.classList.add('show');
@@ -611,7 +611,7 @@ const App = {
         </div>
       </div>
     `;
-    document.body.appendChild(modal);
+    (document.querySelector('.iphone-bezel') || document.body).appendChild(modal);
   },
 
   toggleConsultFilterModal() {
@@ -638,7 +638,7 @@ const App = {
         </button>
       </div>
     `;
-    document.body.appendChild(modal);
+    (document.querySelector('.iphone-bezel') || document.body).appendChild(modal);
   },
 
   showEditProfileModal() {
@@ -695,7 +695,7 @@ const App = {
         </button>
       </div>
     `;
-    document.body.appendChild(modal);
+    (document.querySelector('.iphone-bezel') || document.body).appendChild(modal);
   },
 
   showPromoCodeModal() {
@@ -728,7 +728,7 @@ const App = {
         </div>
       </div>
     `;
-    document.body.appendChild(modal);
+    (document.querySelector('.iphone-bezel') || document.body).appendChild(modal);
   },
 
   /* ── Notifications ────────────────────────────────────────── */
@@ -827,7 +827,7 @@ const BottomSheet = {
         </div>
       </div>
     `;
-    document.body.appendChild(overlay);
+    (document.querySelector('.iphone-bezel') || document.body).appendChild(overlay);
   },
 
   close() {
@@ -861,7 +861,7 @@ const ConfirmDialog = {
         </div>
       </div>
     `;
-    document.body.appendChild(overlay);
+    (document.querySelector('.iphone-bezel') || document.body).appendChild(overlay);
     const confirmBtn = document.getElementById('btn-dialog-confirm-action');
     if (confirmBtn) {
       confirmBtn.onclick = () => {
