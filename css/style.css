@@ -41,8 +41,8 @@ img { display: block; max-width: 100%; }
   --text-muted:       #6b7280;
   --text-gold:        #eab308;
   --text-purple:      #a78bfa;
-  --nav-height:       64px;
-  --status-height:    50px;
+  --nav-height:       58px;
+  --status-height:    44px;
   --radius-sm:        8px;
   --radius-md:        12px;
   --radius-lg:        16px;
@@ -106,13 +106,13 @@ img { display: block; max-width: 100%; }
 
 /* ── iPhone Frame (height-driven, aspect-ratio locked) ───────── */
 .iphone-frame {
-  /* Height is the primary constraint; width follows the phone's aspect ratio */
-  height: min(92vh, 844px);
-  aspect-ratio: 390 / 844;    /* iPhone 15 / 16 ratio – never wider than a real phone */
-  max-width: min(92vw, 400px); /* hard cap so it never overflows on tiny screens */
+  /* Perfectly scaled to match 80% zoom compact golden ratio at 100% standard view */
+  height: min(85vh, 730px);
+  aspect-ratio: 375 / 812;
+  max-width: min(90vw, 360px);
   flex-shrink: 0;
   position: relative;
-  filter: drop-shadow(0 30px 80px rgba(124, 58, 237, 0.45));
+  filter: drop-shadow(0 25px 60px rgba(124, 58, 237, 0.4));
 }
 
 .iphone-bezel {
