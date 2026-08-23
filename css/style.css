@@ -653,8 +653,6 @@ img { display: block; max-width: 100%; }
   border-radius: var(--radius-lg);
   padding: 12px;
   margin: 0 16px 10px;
-  display: flex;
-  gap: 10px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -728,8 +726,6 @@ img { display: block; max-width: 100%; }
 
 /* ── Category Chips (Consult Screen) ─────────────────────── */
 .category-scroll {
-  display: flex;
-  gap: 10px;
   overflow-x: auto;
   padding: 0 16px 8px;
   scrollbar-width: none;
