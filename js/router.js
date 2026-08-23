@@ -20,8 +20,10 @@ const Router = {
       const prev = this.history[this.history.length - 1];
       App.render(prev.screenId, prev.params);
     } else {
-      // Fallback to home or role dashboard
-      if (STATE.role === 'astrologer') {
+      // Fallback to the active role's real dashboard/home screen.
+      // Use currentRole (the canonical state property) instead of the
+      // old/non-existent STATE.role property.
+      if (STATE.currentRole === 'astrologer') {
         this.reset('astro-dashboard');
       } else {
         this.reset('home');
