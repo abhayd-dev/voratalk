@@ -1,407 +1,632 @@
 /* ============================================================
-   AstroTalkz by vorabion — Centralized Data & Storage Layer
+   AstroTalkz by vorabion — Centralized Data Layer
+   Matches reference screens pixel-by-pixel.
    Strictly supports ONLY Chat and Audio Call (NO Video Call).
    ============================================================ */
 
-const DEFAULT_DATA = {
-  /* ── Current User ─────────────────────────────────────────── */
+const STORAGE_KEY = "voratalk_prototype_state_v4";
+
+const INITIAL_DATA = {
+  // Current logged in user (Reference: Priya Sharma)
   currentUser: {
-    id: "USR-001",
+    id: "usr_001",
     name: "Priya Sharma",
     phone: "+91 98765 43210",
     email: "priya.sharma@gmail.com",
-    dob: "1995-05-24",
-    birthTime: "10:30",
-    birthPlace: "Jaipur, Rajasthan",
-    zodiac: "Gemini",
-    moonSign: "Scorpio",
-    nakshatra: "Mrigashira",
-    gender: "Female",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
     walletBalance: 1250,
     points: 1250,
     level: 3,
-    profileCompleted: true,
-    isLoggedIn: true
+    gender: "Female",
+    dob: "1996-07-14",
+    birthTime: "11:45",
+    birthPlace: "Delhi, India",
+    zodiac: "Cancer",
+    moonSign: "Scorpio",
+    isLoggedIn: true,
+    hasCompletedOnboarding: true,
+    role: "user" // "user" | "astrologer"
   },
 
-  /* ── Current Astrologer (Expert Role) ──────────────────────── */
+  // Astrologers Marketplace (Reference Data)
+  astrologers: [
+    {
+      id: "astro_01",
+      name: "Astro Arjun Sharma",
+      title: "Vedic Astrologer · Numerology",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      rating: 4.9,
+      reviews: 125,
+      experience: "8 Years Exp.",
+      consultationsCount: "12K+",
+      languages: ["Hindi", "English"],
+      expertise: ["Love & Relationship", "Career", "Finance", "Marriage", "Education", "Health", "Family"],
+      isOnline: true,
+      verified: true,
+      chatRate: 20,
+      callRate: 30,
+      bio: "Astro Arjun Sharma is a trusted name in Vedic Astrology and Numerology with 8+ years of experience. He specializes in Love, Career, Finance, Marriage and Health related solutions.",
+      availability: ["Today, 24 May", "Sat, 25 May", "Sun, 26 May", "Mon, 27 May", "Tue, 28 May"]
+    },
+    {
+      id: "astro_02",
+      name: "Astro Meera Iyer",
+      title: "Tarot · Vedic · Numerology",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      rating: 4.8,
+      reviews: 98,
+      experience: "6 Years Exp.",
+      consultationsCount: "8.5K+",
+      languages: ["English", "Tamil", "Hindi"],
+      expertise: ["Love", "Relationship", "Career", "Tarot Reading", "Spiritual Healing"],
+      isOnline: true,
+      verified: true,
+      chatRate: 18,
+      callRate: 28,
+      bio: "Astro Meera Iyer is a certified Tarot Master and Vedic Astrologer helping clients find emotional balance, relationship clarity, and spiritual direction for over 6 years.",
+      availability: ["Today, 24 May", "Sat, 25 May", "Sun, 26 May"]
+    },
+    {
+      id: "astro_03",
+      name: "Astro Devdutt Ji",
+      title: "Vastu · Vedic Astrology · KP",
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+      rating: 4.7,
+      reviews: 76,
+      experience: "20+ Years Exp.",
+      consultationsCount: "25K+",
+      languages: ["Hindi", "English", "Sanskrit"],
+      expertise: ["Career", "Finance", "Health", "Vastu Shastra", "KP Astrology", "Gemstone"],
+      isOnline: false,
+      verified: true,
+      chatRate: 25,
+      callRate: 35,
+      bio: "Acharya Devdutt Ji has over two decades of experience in traditional KP Astrology and Vedic Vastu remedies, guiding thousands of families toward harmony and prosperity.",
+      availability: ["Sat, 25 May", "Sun, 26 May", "Mon, 27 May"]
+    },
+    {
+      id: "astro_04",
+      name: "Astro Neha Kapoor",
+      title: "Palmistry · Numerology",
+      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+      rating: 4.9,
+      reviews: 142,
+      experience: "7 Years Exp.",
+      consultationsCount: "10K+",
+      languages: ["Hindi", "English", "Punjabi"],
+      expertise: ["Love & Relationship", "Marriage", "Palmistry", "Name Correction"],
+      isOnline: true,
+      verified: true,
+      chatRate: 22,
+      callRate: 32,
+      bio: "Astro Neha Kapoor combines modern psychological counseling with ancient Palmistry and Pythagorean Numerology to deliver practical, life-changing guidance.",
+      availability: ["Today, 24 May", "Sat, 25 May", "Mon, 27 May"]
+    },
+    {
+      id: "astro_05",
+      name: "Astro Raghav Verma",
+      title: "Vedic Astrology · Kundli Expert",
+      avatar: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80",
+      rating: 4.7,
+      reviews: 64,
+      experience: "10 Years Exp.",
+      consultationsCount: "14K+",
+      languages: ["Hindi", "English"],
+      expertise: ["Career", "Kundli Milan", "Dasha Remedies", "Business Astrology"],
+      isOnline: false,
+      verified: true,
+      chatRate: 20,
+      callRate: 30,
+      bio: "Pandit Raghav Verma is a hereditary Vedic scholar specializing in Janam Kundli analysis, planetary transit timings, and customized Vedic rituals.",
+      availability: ["Sun, 26 May", "Mon, 27 May"]
+    }
+  ],
+
+  // Expert Astrologer Portal Profile (Reference: Dr. Ananya Sharma)
   currentAstrologer: {
-    id: "AST-001",
-    name: "Arjun",
-    fullName: "Astro Arjun Sharma",
-    title: "Vedic Astrologer",
-    experience: "8+ Years",
+    id: "astro_expert_01",
+    fullName: "Dr. Ananya Sharma",
+    title: "Verified Astrologer · Top Rated",
+    badge: "Top Rated (Among top 10% astrologers)",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
     rating: 4.9,
-    totalConsultations: "12K+",
-    reviews: 125,
-    languages: ["Hindi", "English"],
-    expertise: ["Vedic Astrology", "Numerology", "Love & Relationship", "Career"],
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+    reviewsCount: 256,
+    experience: "8 Years",
+    languages: ["Hindi", "English", "Sanskrit"],
     isOnline: true,
+    totalConsultations: 1248,
+    happyClients: 1032,
+    responseTime: "2 min (Very Fast)",
     todayStats: {
       total: 12,
       completed: 8,
       upcoming: 2,
       earnings: 9450
     },
-    availableHours: "10:00 AM - 08:00 PM",
-    availableDays: ["Mon", "Tue", "Wed", "Thu", "Fri"]
+    earningsMonth: 45680,
+    earningsWeek: 9850,
+    earningsYear: 245680,
+    earningsTotal: 875430,
+    breakdown: {
+      chat: 18750,
+      call: 15200,
+      other: 11730
+    },
+    expertise: ["Kundli Analysis", "Career Guidance", "Love & Relationship", "Marriage Matching", "Vastu Consultation", "Finance & Wealth"],
+    bio: "I have more than 8 years of experience in Vedic Astrology. I specialize in Kundli Analysis, Career Guidance, Marriage, Relationship, and Vastu. My aim is to provide accurate guidance and simple remedies for a better life."
   },
 
-  /* ── Astrologers Marketplace ───────────────────────────────── */
-  astrologers: [
-    {
-      id: "AST-001",
-      name: "Astro Arjun Sharma",
-      title: "Vedic Astrology • Numerology",
-      experience: "8 Years Exp.",
-      rating: 4.9,
-      reviews: 125,
-      totalConsultations: "12K+",
-      languages: ["Hindi", "English"],
-      expertise: ["Love & Relationship", "Career", "Finance", "Marriage", "Health"],
-      chatRate: 20,
-      callRate: 30,
-      status: "online",
-      isOnline: true,
-      verified: true,
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80",
-      bio: "Astro Arjun Sharma is a celebrated Vedic Astrologer with 8+ years of dedicated practice in Vedic charts, Numerology, and gemstone consultancy. He has guided over 12,000 clients towards clarity in love, career, and financial growth."
-    },
-    {
-      id: "AST-002",
-      name: "Astro Meera Iyer",
-      title: "Tarot • Vedic • Numerology",
-      experience: "6 Years Exp.",
-      rating: 4.8,
-      reviews: 98,
-      totalConsultations: "9.8K+",
-      languages: ["English", "Tamil", "Hindi"],
-      expertise: ["Love & Relationship", "Career", "Health", "Marriage"],
-      chatRate: 18,
-      callRate: 28,
-      status: "online",
-      isOnline: true,
-      verified: true,
-      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&auto=format&fit=crop&q=80",
-      bio: "Astro Meera Iyer blends ancient Vedic wisdom with modern Tarot intuitive spreads. Specialized in relationship healings and career milestones."
-    },
-    {
-      id: "AST-003",
-      name: "Astro Devdutt Ji",
-      title: "Vastu • Vedic Astrology • KP",
-      experience: "20+ Years Exp.",
-      rating: 4.7,
-      reviews: 76,
-      totalConsultations: "18K+",
-      languages: ["Hindi", "English"],
-      expertise: ["Career", "Finance", "Health", "Vastu"],
-      chatRate: 25,
-      callRate: 35,
-      status: "offline",
-      isOnline: false,
-      verified: true,
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&auto=format&fit=crop&q=80",
-      bio: "Senior Vedic Astrologer from Varanasi with 20+ years of deep expertise in Vastu Shastra, Prashna Kundli, and KP planetary positioning."
-    },
-    {
-      id: "AST-004",
-      name: "Astro Neha Kapoor",
-      title: "Palmistry • Numerology",
-      experience: "9 Years Exp.",
-      rating: 4.9,
-      reviews: 210,
-      totalConsultations: "14K+",
-      languages: ["Hindi", "English"],
-      expertise: ["Love & Relationship", "Marriage", "Education"],
-      chatRate: 22,
-      callRate: 32,
-      status: "online",
-      isOnline: true,
-      verified: true,
-      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=300&auto=format&fit=crop&q=80",
-      bio: "Expert palmist and life path numerologist providing uplifting remedies and accurate timing for marriage and education goals."
-    },
-    {
-      id: "AST-005",
-      name: "Astro Raghav Verma",
-      title: "Vedic Astrology • Finance",
-      experience: "5 Years Exp.",
-      rating: 4.6,
-      reviews: 55,
-      totalConsultations: "5.2K+",
-      languages: ["Hindi", "English"],
-      expertise: ["Career", "Finance", "Family"],
-      chatRate: 15,
-      callRate: 22,
-      status: "online",
-      isOnline: true,
-      verified: false,
-      avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=300&auto=format&fit=crop&q=80",
-      bio: "Dynamic and practical Vedic astrologer focusing on career trajectory, investment timings, and financial prosperity."
-    }
-  ],
-
-  /* ── Favourites (Astrologer IDs) ───────────────────────────── */
-  favourites: ["AST-001", "AST-002"],
-
-  /* ── Bookings ──────────────────────────────────────────────── */
+  // Bookings (Matching Reference screens)
   bookings: [
     {
-      id: "BK-892401",
-      astrologerId: "AST-001",
+      id: "BK123456",
+      astrologerId: "astro_01",
       astrologerName: "Astro Arjun Sharma",
-      astrologerTitle: "Vedic Astrology • Numerology",
       astrologerAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-      type: "Audio Call",
-      date: "Today",
-      time: "06:30 PM",
+      expertise: "Vedic Astrology · Numerology",
+      type: "Chat", // "Chat" | "Audio Call" (STRICTLY NO VIDEO)
+      date: "24 May 2026, Fri",
+      time: "10:30 AM",
       duration: "30 Minutes",
-      amount: 600,
       ratePerMin: 20,
-      topic: "Career & Promotion Timing",
-      userNote: "Need guidance on upcoming promotion and offshore opportunities.",
-      status: "upcoming",
-      paymentStatus: "Paid",
-      bookedOn: "23 Aug 2026, 11:30 AM"
+      amount: 600,
+      topic: "Career Guidance",
+      note: "I need guidance regarding career in data science and future opportunities.",
+      status: "upcoming", // "upcoming" | "completed" | "cancelled"
+      steps: [
+        { label: "Booked", date: "20 May 2026, 10:15 AM", done: true },
+        { label: "Payment Confirmed", date: "20 May 2026, 10:16 AM", done: true },
+        { label: "Reminder Sent", date: "24 May 2026, 09:00 AM", done: true },
+        { label: "Upcoming", date: "24 May 2026, 10:30 AM", done: false }
+      ]
     },
     {
-      id: "BK-892390",
-      astrologerId: "AST-002",
+      id: "BK123455",
+      astrologerId: "astro_02",
       astrologerName: "Astro Meera Iyer",
-      astrologerTitle: "Tarot • Vedic • Numerology",
-      astrologerAvatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
-      type: "Chat",
-      date: "20 Aug 2026",
-      time: "04:00 PM",
-      duration: "20 Minutes",
-      amount: 360,
-      ratePerMin: 18,
-      topic: "Relationship Compatibility",
-      userNote: "Tarot card reading for marriage timing.",
-      status: "completed",
-      rating: 5,
-      reviewText: "Very insightful and calm session. Highly recommended!"
-    },
-    {
-      id: "BK-892210",
-      astrologerId: "AST-003",
-      astrologerName: "Astro Devdutt Ji",
-      astrologerTitle: "Vastu • Vedic Astrology",
-      astrologerAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
+      astrologerAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      expertise: "Tarot · Vedic · Numerology",
       type: "Audio Call",
-      date: "14 Aug 2026",
-      time: "11:00 AM",
-      duration: "15 Minutes",
-      amount: 375,
-      ratePerMin: 25,
-      topic: "Home Vastu Guidance",
-      userNote: "Main entrance and kitchen direction analysis.",
+      date: "18 May 2026, Sat",
+      time: "04:00 PM",
+      duration: "18 Minutes",
+      ratePerMin: 28,
+      amount: 500,
+      topic: "Relationship Clarity",
+      note: "Need guidance on marriage timeline and partner compatibility.",
       status: "completed",
       rating: 4.8
     },
     {
-      id: "BK-892050",
-      astrologerId: "AST-005",
-      astrologerName: "Astro Raghav Verma",
-      astrologerTitle: "Vedic Astrology",
-      astrologerAvatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
+      id: "BK123454",
+      astrologerId: "astro_03",
+      astrologerName: "Astro Devdutt Ji",
+      astrologerAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+      expertise: "Vastu · Vedic Astrology",
       type: "Chat",
-      date: "05 Aug 2026",
+      date: "10 May 2026, Fri",
+      time: "11:00 AM",
+      duration: "16 Minutes",
+      ratePerMin: 25,
+      amount: 400,
+      topic: "Home Vastu Directions",
+      note: "Consultation regarding entrance and kitchen placement.",
+      status: "completed",
+      rating: 4.7
+    },
+    {
+      id: "BK123453",
+      astrologerId: "astro_04",
+      astrologerName: "Astro Neha Kapoor",
+      astrologerAvatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+      expertise: "Palmistry · Numerology",
+      type: "Audio Call",
+      date: "02 May 2026, Thu",
+      time: "07:30 PM",
+      duration: "15 Minutes",
+      ratePerMin: 32,
+      amount: 480,
+      topic: "Name Correction",
+      note: "Business name spelling analysis.",
+      status: "completed",
+      rating: 4.9
+    },
+    {
+      id: "BK123450",
+      astrologerId: "astro_05",
+      astrologerName: "Astro Raghav Verma",
+      astrologerAvatar: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80",
+      expertise: "Vedic Astrology",
+      type: "Chat",
+      date: "05 May 2026, Sun",
       time: "09:00 AM",
       duration: "15 Minutes",
-      amount: 225,
-      status: "cancelled",
-      refundStatus: "Refunded to Wallet"
+      ratePerMin: 20,
+      amount: 300,
+      topic: "Kundli Dasha",
+      note: "Rescheduled due to network connectivity.",
+      status: "cancelled"
     }
   ],
 
-  /* ── Transactions History ──────────────────────────────────── */
+  // Transactions (Reference: Transaction History screen)
   transactions: [
-    { id: "TXN-9041", date: "23 Aug 2026", time: "11:30 AM", type: "call", title: "Audio Call: Astro Arjun", amount: 600, isCredit: false, status: "Success" },
-    { id: "TXN-9022", date: "22 Aug 2026", time: "07:15 PM", type: "topup", method: "UPI", title: "Wallet Recharge", amount: 1000, isCredit: true, status: "Success" },
-    { id: "TXN-8980", date: "20 Aug 2026", time: "04:20 PM", type: "chat", title: "Chat: Astro Meera", amount: 360, isCredit: false, status: "Success" },
-    { id: "TXN-8951", date: "15 Aug 2026", time: "01:45 PM", type: "topup", method: "Card", title: "Wallet Recharge", amount: 500, isCredit: true, status: "Success" },
-    { id: "TXN-8910", date: "14 Aug 2026", time: "11:15 AM", type: "call", title: "Audio Call: Astro Devdutt", amount: 375, isCredit: false, status: "Success" },
-    { id: "TXN-8840", date: "05 Aug 2026", time: "09:05 AM", type: "refund", method: "Wallet", title: "Cancelled Session Refund", amount: 225, isCredit: true, status: "Success" }
+    {
+      id: "tx_01",
+      title: "Wallet Top Up",
+      method: "UPI",
+      date: "22 May 2026",
+      time: "10:30 AM",
+      amount: 1000,
+      isCredit: true,
+      status: "Success"
+    },
+    {
+      id: "tx_02",
+      title: "Chat Consultation",
+      astrologer: "Astro Arjun Sharma",
+      date: "22 May 2026",
+      time: "09:15 AM",
+      amount: 300,
+      isCredit: false,
+      status: "Completed"
+    },
+    {
+      id: "tx_03",
+      title: "Audio Call Consultation",
+      astrologer: "Astro Meera Iyer",
+      date: "22 May 2026",
+      time: "08:20 AM",
+      amount: 600,
+      isCredit: false,
+      status: "Completed"
+    },
+    {
+      id: "tx_04",
+      title: "Wallet Top Up",
+      method: "UPI",
+      date: "21 May 2026",
+      time: "06:45 PM",
+      amount: 500,
+      isCredit: true,
+      status: "Success"
+    },
+    {
+      id: "tx_05",
+      title: "Chat Consultation",
+      astrologer: "Astro Devdutt Ji",
+      date: "21 May 2026",
+      time: "05:10 PM",
+      amount: 250,
+      isCredit: false,
+      status: "Completed"
+    },
+    {
+      id: "tx_06",
+      title: "Wallet Top Up",
+      method: "Card",
+      date: "20 May 2026",
+      time: "11:30 AM",
+      amount: 750,
+      isCredit: true,
+      status: "Success"
+    },
+    {
+      id: "tx_07",
+      title: "Audio Call Consultation",
+      astrologer: "Astro Neha Kapoor",
+      date: "20 May 2026",
+      time: "10:00 AM",
+      amount: 500,
+      isCredit: false,
+      status: "Completed"
+    },
+    {
+      id: "tx_08",
+      title: "Chat Consultation",
+      astrologer: "Astro Raghav Verma",
+      date: "19 May 2026",
+      time: "07:40 AM",
+      amount: 200,
+      isCredit: false,
+      status: "Completed"
+    }
   ],
 
-  /* ── Notifications ─────────────────────────────────────────── */
+  // Saved / Favourite Astrologers
+  favourites: ["astro_01", "astro_02", "astro_03", "astro_04"],
+
+  // Notifications
   notifications: [
-    { id: "NOTIF-01", title: "Upcoming Session Alert", message: "Your Audio Call with Astro Arjun Sharma starts today at 06:30 PM.", time: "10 mins ago", read: false, type: "booking" },
-    { id: "NOTIF-02", title: "Wallet Recharge Successful", message: "₹1,000 added to your VoraTalk balance via UPI.", time: "Yesterday", read: false, type: "wallet" },
-    { id: "NOTIF-03", title: "Auspicious Muhurat Today", message: "Abhijit Muhurat is active from 11:45 AM to 12:35 PM. Great for new ventures!", time: "2 days ago", read: true, type: "system" },
-    { id: "NOTIF-04", title: "Special Offer: 50% Off", message: "Use coupon WELCOME50 on your next consultation.", time: "3 days ago", read: true, type: "offer" }
+    {
+      id: "notif_01",
+      title: "Booking Reminder ✦",
+      message: "Your Audio Call with Astro Arjun Sharma starts in 15 minutes.",
+      time: "10m ago",
+      read: false
+    },
+    {
+      id: "notif_02",
+      title: "Special Coupon Code 🏷️",
+      message: "Use code WELCOME50 for ₹50 off on your next consultation.",
+      time: "2h ago",
+      read: false
+    },
+    {
+      id: "notif_03",
+      title: "Daily Horoscope Ready",
+      message: "Aries: A positive and energetic day for career growth.",
+      time: "6h ago",
+      read: true
+    }
   ],
 
-  /* ── Coupons / Offers ──────────────────────────────────────── */
-  offers: [
-    { code: "WELCOME50", title: "Flat ₹50 OFF", discount: 50, type: "fixed", minAmount: 100, desc: "Valid on first consultation with verified astrologers" },
-    { code: "FIRSTCALL100", title: "Flat ₹100 OFF", discount: 100, type: "fixed", minAmount: 300, desc: "Valid on audio consultations of 15+ minutes" },
-    { code: "ASTRO20", title: "20% Discount", discount: 20, type: "percent", minAmount: 200, maxDiscount: 150, desc: "Get 20% off up to ₹150 on any session" }
-  ],
-
-  /* ── Chat Messages Store ───────────────────────────────────── */
+  // Chat Transcripts
   chatMessages: {
-    "AST-001": [
-      { id: 1, sender: "astrologer", text: "Namaste Priya ji! Welcome to AstroTalkz. I am Astro Arjun Sharma. How can I assist you with your career and life path today?", time: "10:30 AM" },
-      { id: 2, sender: "user", text: "Namaste Pandit ji, I wanted guidance on my career switch and financial outlook for this year.", time: "10:31 AM" },
-      { id: 3, sender: "astrologer", text: "I have examined your Gemini Rashi with Scorpio Moon. Jupiter's current transit over your 10th house indicates great career momentum starting from October. Let us discuss specific remedies.", time: "10:32 AM" }
-    ],
-    "AST-002": [
-      { id: 1, sender: "astrologer", text: "Hello Priya! I'm Astro Meera. Feel free to share what's on your mind regarding relationships or life decisions.", time: "04:00 PM" }
+    "astro_01": [
+      { id: "m1", sender: "user", text: "Namaste! I want to know about my career growth and future opportunities.", time: "09:30 AM" },
+      { id: "m2", sender: "astrologer", text: "Namaste! 🙏\nSure, I will analyze your career path and future opportunities. Please share your birth details to get started.", time: "09:31 AM" },
+      { id: "m3", sender: "user", text: "14 July 1996\n11:45 AM\nDelhi, India", time: "09:32 AM" },
+      { id: "m4", sender: "astrologer", text: "Thank you! Please give me a moment to analyze your chart. I'll share the insights with you shortly.", time: "09:33 AM" },
+      { id: "m5", sender: "astrologer", text: "Based on your birth details, I can see that you have strong potential for growth in the next 2–3 years. Major opportunities are visible around mid 2026.", time: "09:36 AM" }
     ]
   },
 
-  /* ── Expert Side Consultations & Requests ─────────────────── */
+  // Expert Live Requests & Consultations Queue
   astroConsultations: [
     {
-      id: "REQ-8901",
+      id: "CONS12548",
       clientName: "Sneha Kapoor",
-      clientAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-      clientType: "Returning User",
-      clientAge: 28,
+      clientAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      clientStatus: "Returning User",
+      clientAge: "28 Years",
       clientDob: "14 Jul 1996",
       clientBirthTime: "11:45 AM",
       clientBirthPlace: "Delhi, India",
-      clientLanguages: ["Hindi", "English"],
+      clientLanguages: "Hindi, English",
       clientZodiac: "Cancer",
       clientMoonSign: "Scorpio",
-      clientQuestion: "I am facing confusion in career switch. Will I get a good opportunity soon?",
-      type: "Chat",
-      date: "Today",
-      time: "07:00 PM",
-      duration: "15 Minutes",
-      amount: 300,
-      status: "pending"
+      type: "Chat", // "Chat" | "Audio Call" (STRICTLY NO VIDEO)
+      date: "22 May 2026",
+      time: "12:30 PM",
+      duration: "30 Minutes",
+      amount: 250,
+      clientQuestion: "I am facing confusion in my career. Will I get a good job opportunity this year? Also tell me about my financial stability and future.",
+      notes: "Focus on career and finance. Check dasha periods. Provide remedies for mental peace.",
+      status: "confirmed"
     },
     {
-      id: "REQ-8902",
-      clientName: "Amit Malhotra",
-      clientAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-      clientType: "New User",
-      clientDob: "03 Sep 1988",
-      clientBirthTime: "07:15 AM",
+      id: "CONS12549",
+      clientName: "Rahul Verma",
+      clientAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      clientStatus: "New User",
+      clientAge: "31 Years",
+      clientDob: "22 Aug 1993",
+      clientBirthTime: "04:15 PM",
       clientBirthPlace: "Mumbai, India",
-      clientLanguages: ["Hindi", "English"],
-      clientQuestion: "Marriage compatibility and business investment timing.",
+      clientLanguages: "Hindi",
+      clientZodiac: "Leo",
+      clientMoonSign: "Libra",
       type: "Audio Call",
-      date: "Today",
-      time: "08:15 PM",
-      duration: "30 Minutes",
-      amount: 900,
+      date: "22 May 2026",
+      time: "11:15 AM",
+      duration: "15 Minutes",
+      amount: 500,
+      clientQuestion: "Marriage timing guidance and business partnership compatibility.",
+      notes: "Check 7th house lord transit.",
       status: "pending"
     }
   ],
 
-  /* ── Daily Horoscope ───────────────────────────────────────── */
-  horoscopes: {
-    Aries:       { symbol: "♈", dates: "Mar 21 - Apr 19", overall: 85, love: 88, career: 90, money: 75, health: 80, luckyNumber: 9, luckyColor: "Crimson Red", luckyTime: "10:30 AM", luckyGemstone: "Red Coral", prediction: "Mars energizes your house of ambition. It's an opportune day for bold career negotiations and decisive action.", remedies: ["Offer water with red vermilion to the rising Sun.", "Chant 'Om Bhaumaya Namah' 11 times."] },
-    Taurus:      { symbol: "♉", dates: "Apr 20 - May 20", overall: 82, love: 92, career: 78, money: 85, health: 80, luckyNumber: 6, luckyColor: "Emerald Green", luckyTime: "02:15 PM", luckyGemstone: "White Diamond / Opal", prediction: "Venus bestows financial clarity and harmonious domestic conversations. Long-term investments yield fruitful thoughts.", remedies: ["Light a pure cow ghee lamp in evening.", "Wear light pastel green or white."] },
-    Gemini:      { symbol: "♊", dates: "May 21 - Jun 20", overall: 88, love: 80, career: 92, money: 85, health: 82, luckyNumber: 5, luckyColor: "Bright Yellow", luckyTime: "11:00 AM", luckyGemstone: "Emerald (Panna)", prediction: "Mercury boosts your analytical prowess and communicative charm. Perfect day for presentations and creative problem solving.", remedies: ["Feed green grass or spinach to a cow.", "Chant 'Om Budhaya Namah' 108 times."] },
-    Cancer:      { symbol: "♋", dates: "Jun 21 - Jul 22", overall: 80, love: 95, career: 75, money: 78, health: 86, luckyNumber: 2, luckyColor: "Pearl White", luckyTime: "07:30 PM", luckyGemstone: "Natural Pearl", prediction: "Moon enhances emotional empathy and intuitive perceptions. Trust your inner compass during key family discussions.", remedies: ["Offer raw milk to Lord Shiva.", "Keep a silver coin in your wallet."] },
-    Leo:         { symbol: "♌", dates: "Jul 23 - Aug 22", overall: 91, love: 85, career: 95, money: 90, health: 85, luckyNumber: 1, luckyColor: "Royal Gold", luckyTime: "12:00 PM", luckyGemstone: "Ruby (Manik)", prediction: "The Sun radiates authority and charismatic presence. Executive leaders take note of your contributions.", remedies: ["Recite Aditya Hridaya Stotram in the morning.", "Donate wheat or jaggery to the needy."] },
-    Virgo:       { symbol: "♍", dates: "Aug 23 - Sep 22", overall: 78, love: 72, career: 88, money: 80, health: 90, luckyNumber: 5, luckyColor: "Navy Blue", luckyTime: "09:15 AM", luckyGemstone: "Jade / Emerald", prediction: "Meticulous organization clears backlog effortlessly. Health routines and clean diets bring immediate vitality.", remedies: ["Practice 15 minutes of Pranayama.", "Wear green or navy blue attire."] },
-    Libra:       { symbol: "♎", dates: "Sep 23 - Oct 22", overall: 86, love: 94, career: 82, money: 85, health: 80, luckyNumber: 6, luckyColor: "Blush Pink", luckyTime: "06:00 PM", luckyGemstone: "Diamond / Opal", prediction: "Venus creates aesthetic harmony in social engagements. Collaborative projects move swiftly to completion.", remedies: ["Offer fragrant white flowers to Goddess Lakshmi.", "Apply sandalwood paste on forehead."] },
-    Scorpio:     { symbol: "♏", dates: "Oct 23 - Nov 21", overall: 84, love: 80, career: 90, money: 85, health: 82, luckyNumber: 8, luckyColor: "Deep Maroon", luckyTime: "08:45 PM", luckyGemstone: "Red Coral", prediction: "Deep intuition helps you uncover hidden insights in ongoing financial projects. Maintain steady focus.", remedies: ["Chant 'Om Namah Shivaya' 108 times.", "Donate red lentils on Tuesdays."] },
-    Sagittarius: { symbol: "♐", dates: "Nov 22 - Dec 21", overall: 94, love: 88, career: 96, money: 92, health: 88, luckyNumber: 3, luckyColor: "Saffron Yellow", luckyTime: "03:30 PM", luckyGemstone: "Yellow Sapphire (Pukhraj)", prediction: "Jupiter's auspicious aspect opens doors for higher learning, travel, and rewarding spiritual endeavors.", remedies: ["Apply saffron tilak on your forehead.", "Offer yellow flowers to Lord Vishnu."] },
-    Capricorn:   { symbol: "♑", dates: "Dec 22 - Jan 19", overall: 79, love: 75, career: 92, money: 85, health: 76, luckyNumber: 8, luckyColor: "Charcoal Grey", luckyTime: "10:00 AM", luckyGemstone: "Blue Sapphire", prediction: "Saturn rewards persistence and methodical diligence. Hard work is duly recognized by senior authorities.", remedies: ["Light a mustard oil lamp under a Peepal tree.", "Help an elderly or needy person."] },
-    Aquarius:    { symbol: "♒", dates: "Jan 20 - Feb 18", overall: 87, love: 85, career: 90, money: 82, health: 88, luckyNumber: 7, luckyColor: "Electric Cyan", luckyTime: "07:15 PM", luckyGemstone: "Amethyst", prediction: "Innovative solutions flow naturally. Networking with progressive minds leads to exciting future collaborations.", remedies: ["Feed birds with multigrain seeds.", "Practice mindful meditation at sunrise."] },
-    Pisces:      { symbol: "♓", dates: "Feb 19 - Mar 20", overall: 89, love: 96, career: 82, money: 85, health: 85, luckyNumber: 7, luckyColor: "Aquamarine", luckyTime: "05:00 PM", luckyGemstone: "Aquamarine / Pukhraj", prediction: "Spiritual peace and artistic inspiration shine today. Compassionate gestures bring immense inner joy.", remedies: ["Offer clean water and flowers to flowing water.", "Chant Gayatri Mantra 21 times."] }
-  },
+  // Offers & Coupons
+  offers: [
+    { code: "WELCOME50", discount: 50, minAmount: 100, title: "₹50 Off for New Users" },
+    { code: "FIRSTCALL100", discount: 100, minAmount: 300, title: "₹100 Off on Audio Call" },
+    { code: "ASTRO20", discount: 0.20, isPercentage: true, minAmount: 200, title: "20% Off Consultation" }
+  ],
 
-  /* ── Kundli Data ───────────────────────────────────────────── */
-  kundliData: {
-    name: "Priya Sharma",
-    dob: "24 May 1995",
-    time: "10:30 AM",
-    place: "Jaipur, Rajasthan",
-    lagna: "Virgo",
-    rashi: "Gemini",
-    nakshatra: "Mrigashira",
-    navamsaLagna: "Aries",
-    planets: [
-      { name: "Sun",     symbol: "Su", house: 9,  sign: "Capricorn",   degree: "14°32'" },
-      { name: "Moon",    symbol: "Mo", house: 10, sign: "Aquarius",    degree: "08°17'" },
-      { name: "Mars",    symbol: "Ma", house: 8,  sign: "Sagittarius", degree: "22°05'" },
-      { name: "Mercury", symbol: "Me", house: 9,  sign: "Capricorn",   degree: "28°41'" },
-      { name: "Jupiter", symbol: "Ju", house: 7,  sign: "Scorpio",     degree: "03°19'" },
-      { name: "Venus",   symbol: "Ve", house: 10, sign: "Aquarius",    degree: "17°52'" },
-      { name: "Saturn",  symbol: "Sa", house: 6,  sign: "Libra",       degree: "09°38'" },
-      { name: "Rahu",    symbol: "Ra", house: 2,  sign: "Gemini",      degree: "11°27'" },
-      { name: "Ketu",    symbol: "Ke", house: 8,  sign: "Sagittarius", degree: "11°27'" }
-    ],
-    doshas: [
-      { name: "Mangal Dosha", present: false, severity: "None", description: "No Manglik affliction detected in Lagna or Chandra Kundli." },
-      { name: "Kaal Sarp Dosha", present: true, severity: "Partial", description: "Partial Anant Kaal Sarp. Manageable through simple daily Shiva Pooja." },
-      { name: "Pitra Dosha", present: false, severity: "None", description: "Ancestral planetary positions are completely benevolent." }
-    ]
+  // Daily Horoscopes (Reference: Daily Horoscope screen)
+  horoscopes: {
+    Aries: {
+      symbol: "♈",
+      dates: "March 21 - April 19",
+      overall: 78,
+      headline: "A positive day ahead!",
+      summary: "Today brings opportunities for growth and meaningful connections. Stay confident and focus on your goals.",
+      detailed: "Your energy is high and motivation is strong. It's a great time to start new projects or take bold steps in your career. In relationships, communication will bring you closer to your loved ones. Take care of your health by balancing work and rest.",
+      love: 80,
+      career: 85,
+      money: 70,
+      health: 90,
+      luckyNumber: "9",
+      luckyColor: "Red",
+      luckyTime: "10:30 AM",
+      luckyGemstone: "Ruby",
+      remedies: [
+        { icon: "☀️", text: "Offer water to the Sun God in the morning." },
+        { icon: "🕉️", text: "Chant \"Om Surya Namah\" 11 times daily." },
+        { icon: "🌱", text: "Donate red lentils on Tuesday." }
+      ]
+    },
+    Taurus: {
+      symbol: "♉",
+      dates: "April 20 - May 20",
+      overall: 82,
+      headline: "Financial harmony and steady growth.",
+      summary: "Venus favors material comfort and creative endeavors today. Patience pays off.",
+      detailed: "Financial decisions made today will yield long-term benefits. Express gratitude in family interactions.",
+      love: 85, career: 78, money: 88, health: 80,
+      luckyNumber: "6", luckyColor: "White", luckyTime: "02:15 PM", luckyGemstone: "Diamond",
+      remedies: [{ icon: "🌸", text: "Offer white flowers to Goddess Lakshmi." }]
+    },
+    Gemini: {
+      symbol: "♊",
+      dates: "May 21 - June 20",
+      overall: 88,
+      headline: "Brilliant communication and sharp intellect.",
+      summary: "Mercury brings quick resolution to complex discussions and opens new networking avenues.",
+      detailed: "Your verbal fluency is at its peak. Ideal time for job interviews, contract signings, or creative writing.",
+      love: 82, career: 92, money: 75, health: 85,
+      luckyNumber: "5", luckyColor: "Emerald Green", luckyTime: "11:00 AM", luckyGemstone: "Emerald",
+      remedies: [{ icon: "🌿", text: "Water a Tulsi plant and chant Vishnu Sahasranama." }]
+    },
+    Cancer: {
+      symbol: "♋",
+      dates: "June 21 - July 22",
+      overall: 75,
+      headline: "Emotional clarity and intuitive insights.",
+      summary: "Moon encourages deep family bonding and self-care rituals.",
+      detailed: "Trust your inner gut feelings when dealing with colleagues.",
+      love: 88, career: 70, money: 72, health: 78,
+      luckyNumber: "2", luckyColor: "Silver", luckyTime: "08:30 PM", luckyGemstone: "Pearl",
+      remedies: [{ icon: "🌙", text: "Offer raw milk to Shivling on Mondays." }]
+    },
+    Leo: {
+      symbol: "♌",
+      dates: "July 23 - August 22",
+      overall: 91,
+      headline: "Commanding leadership and charismatic presence.",
+      summary: "The Sun blesses you with vitality and recognition at the workplace.",
+      detailed: "A stellar day to present new proposals. Others will readily follow your guidance.",
+      love: 90, career: 95, money: 85, health: 90,
+      luckyNumber: "1", luckyColor: "Gold", luckyTime: "09:15 AM", luckyGemstone: "Ruby",
+      remedies: [{ icon: "☀️", text: "Recite Aditya Hridaya Stotram at sunrise." }]
+    },
+    Virgo: {
+      symbol: "♍",
+      dates: "August 23 - September 22",
+      overall: 80,
+      headline: "Analytical mastery and meticulous planning.",
+      summary: "Great focus on wellness, debt clearance, and routine optimization.",
+      detailed: "Your attention to detail saves significant resources.",
+      love: 75, career: 88, money: 82, health: 85,
+      luckyNumber: "7", luckyColor: "Olive Green", luckyTime: "04:30 PM", luckyGemstone: "Peridot",
+      remedies: [{ icon: "🦜", text: "Feed green fodder or spinach to cows." }]
+    },
+    Libra: {
+      symbol: "♎",
+      dates: "September 23 - October 22",
+      overall: 86,
+      headline: "Social elegance and diplomatic success.",
+      summary: "Harmonious partnerships and collaborative triumphs.",
+      detailed: "A delightful day for romance and artistic pursuits.",
+      love: 92, career: 80, money: 84, health: 82,
+      luckyNumber: "6", luckyColor: "Pastel Pink", luckyTime: "06:00 PM", luckyGemstone: "Opal",
+      remedies: [{ icon: "🪔", text: "Light a fragrant incense stick in your prayer area." }]
+    },
+    Scorpio: {
+      symbol: "♏",
+      dates: "October 23 - November 21",
+      overall: 84,
+      headline: "Transformative power and unwavering focus.",
+      summary: "Mars provides the courage to eliminate old roadblocks.",
+      detailed: "Deep research will uncover profitable insights.",
+      love: 80, career: 88, money: 90, health: 76,
+      luckyNumber: "9", luckyColor: "Maroon", luckyTime: "01:45 PM", luckyGemstone: "Red Coral",
+      remedies: [{ icon: "🚩", text: "Chant Hanuman Chalisa in the evening." }]
+    },
+    Sagittarius: {
+      symbol: "♐",
+      dates: "November 22 - December 21",
+      overall: 89,
+      headline: "Optimism, higher wisdom and auspicious luck.",
+      summary: "Jupiter expands your horizon with unexpected favorable news.",
+      detailed: "Travel or scholarly discussions will bring spiritual delight.",
+      love: 85, career: 90, money: 88, health: 86,
+      luckyNumber: "3", luckyColor: "Yellow", luckyTime: "10:00 AM", luckyGemstone: "Yellow Sapphire",
+      remedies: [{ icon: "🍌", text: "Apply saffron tilak on your forehead." }]
+    },
+    Capricorn: {
+      symbol: "♑",
+      dates: "December 22 - January 19",
+      overall: 83,
+      headline: "Disciplined execution and strategic milestone.",
+      summary: "Saturn rewards hard work and persistence.",
+      detailed: "Senior management appreciates your dedication.",
+      love: 70, career: 92, money: 85, health: 80,
+      luckyNumber: "8", luckyColor: "Navy Blue", luckyTime: "05:00 PM", luckyGemstone: "Blue Sapphire",
+      remedies: [{ icon: "🕯️", text: "Light a mustard oil lamp under a Peepal tree." }]
+    },
+    Aquarius: {
+      symbol: "♒",
+      dates: "January 20 - February 18",
+      overall: 87,
+      headline: "Innovative breakthroughs and community support.",
+      summary: "Unconventional thinking creates brilliant solutions today.",
+      detailed: "Friends and social circles bring heartwarming encouragement.",
+      love: 84, career: 89, money: 82, health: 88,
+      luckyNumber: "4", luckyColor: "Electric Violet", luckyTime: "03:30 PM", luckyGemstone: "Amethyst",
+      remedies: [{ icon: "🕊️", text: "Feed birds with mixed grains in the morning." }]
+    },
+    Pisces: {
+      symbol: "♓",
+      dates: "February 19 - March 20",
+      overall: 85,
+      headline: "Spiritual tranquility and imaginative inspiration.",
+      summary: "Deep empathy and psychic intuition guide your path today.",
+      detailed: "Meditative practices will yield profound inner peace.",
+      love: 90, career: 78, money: 80, health: 86,
+      luckyNumber: "3", luckyColor: "Sea Green", luckyTime: "07:15 PM", luckyGemstone: "Aquamarine",
+      remedies: [{ icon: "🌊", text: "Feed fish with wheat dough balls." }]
+    }
   }
 };
 
-/* ── Storage Manager Abstraction ───────────────────────────── */
+/* ── Central State & LocalStorage Manager ─────────────────── */
 const Storage = {
-  KEY: "voratalk_prototype_state_v3",
-
   getState() {
     try {
-      const saved = localStorage.getItem(this.KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Merge with default to ensure no missing keys
-        return Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_DATA)), parsed);
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        return JSON.parse(stored);
       }
     } catch (e) {
-      console.warn("Could not read localStorage:", e);
+      console.warn("LocalStorage parse error, falling back to default:", e);
     }
-    return JSON.parse(JSON.stringify(DEFAULT_DATA));
+    return JSON.parse(JSON.stringify(INITIAL_DATA));
   },
 
-  saveState(dataToSave) {
+  saveState(state) {
     try {
-      localStorage.setItem(this.KEY, JSON.stringify(dataToSave || DATA));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
-      console.error("Could not write to localStorage:", e);
+      console.error("LocalStorage save error:", e);
     }
   },
 
   resetDemo() {
     try {
-      localStorage.removeItem(this.KEY);
+      localStorage.removeItem(STORAGE_KEY);
     } catch (e) {}
-    // Reset global DATA in memory
-    for (let key in DATA) delete DATA[key];
-    Object.assign(DATA, JSON.parse(JSON.stringify(DEFAULT_DATA)));
-    STATE.walletBalance = DATA.currentUser.walletBalance;
-    STATE.role = "user";
-    this.saveState(DATA);
+    window.location.reload();
   }
 };
 
-/* ── Active DATA Object Initialized from Storage ──────────── */
-const DATA = Storage.getState();
+// Global reactive DATA instance
+let DATA = Storage.getState();
 
-/* ── Active Application State ─────────────────────────────── */
-const STATE = {
-  role: "user", // "user" | "astrologer"
-  currentScreen: "user-login",
-  selectedAstrologerId: "AST-001",
+// Transient UI State (Ephemeral)
+let STATE = {
+  currentRole: "user", // "user" | "astrologer"
+  activeScreen: "home",
+  selectedAstrologerId: "astro_01",
   selectedConsultationType: "chat", // "chat" | "call" (STRICTLY NO VIDEO)
-  selectedDuration: 15, // in minutes
-  selectedDate: "Today",
+  selectedDuration: 30, // in minutes
+  selectedDate: "Today, 24 May",
   selectedTime: "10:30 AM",
-  selectedBookingTopic: "Career Guidance",
+  selectedTopup: 500,
   appliedCoupon: null,
-  activeChatTimer: null,
-  activeCallTimer: null,
-  chatSecondsRemaining: 900,
-  callSecondsElapsed: 0,
-  isMuted: false,
-  isSpeaker: false,
-  selectedHoroscopeSign: "Gemini",
-  consultSearchQuery: "",
   consultCategoryFilter: "All",
   consultTypeFilter: "All", // "All" | "chat" | "call"
-  consultSortBy: "recommended"
+  consultSearchQuery: "",
+  consultSortBy: "recommended",
+  selectedHoroscopeSign: "Aries",
+  selectedHoroscopeTab: "Today",
+  activeChatTimer: null,
+  activeChatSeconds: 0,
+  activeAudioCallTimer: null,
+  activeAudioCallSeconds: 0,
+  isMuted: false,
+  isSpeakerOn: false,
+  activeBookingId: "BK123456"
 };

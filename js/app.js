@@ -15,7 +15,7 @@ const App = {
     
     // Check initial route
     if (DATA.currentUser && DATA.currentUser.isLoggedIn) {
-      if (STATE.role === 'astrologer') {
+      if (STATE.currentRole === 'astrologer') {
         Router.reset('astro-dashboard');
       } else {
         Router.reset('home');
@@ -38,7 +38,7 @@ const App = {
     const viewport = document.getElementById('screen-viewport');
     if (!viewport) return;
 
-    STATE.currentScreen = screenId;
+    STATE.activeScreen = screenId;
 
     // Clear active timers when switching screens
     if (screenId !== 'chat' && screenId !== 'astro-consult-live') {
@@ -70,7 +70,7 @@ const App = {
     userNav.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     astroNav.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
 
-    if (STATE.role === 'user') {
+    if (STATE.currentRole === 'user') {
       const mainScreens = ['home', 'consult', 'horoscope', 'bookings', 'profile'];
       if (mainScreens.includes(screenId)) {
         userNav.style.display = 'flex';
@@ -79,10 +79,10 @@ const App = {
         if (activeEl) activeEl.classList.add('active');
       }
     } else {
-      const mainScreens = ['astro-dashboard', 'astro-consults', 'astro-earnings', 'astro-profile'];
+      const mainScreens = ['astro-dashboard', 'astro-consults', 'astro-earnings', 'astro-profile-expert'];
       if (mainScreens.includes(screenId)) {
         astroNav.style.display = 'flex';
-        const idMap = { 'astro-dashboard':'anav-dashboard', 'astro-consults':'anav-consults', 'astro-earnings':'anav-earnings', 'astro-profile':'anav-profile' };
+        const idMap = { 'astro-dashboard':'anav-dashboard', 'astro-consults':'anav-consults', 'astro-earnings':'anav-earnings', 'astro-profile-expert':'anav-profile' };
         const activeEl = document.getElementById(idMap[screenId]);
         if (activeEl) activeEl.classList.add('active');
       }
@@ -101,13 +101,13 @@ const App = {
     }
     
     // Auto scroll chat containers
-    const msgs = document.getElementById('chat-messages');
+    const msgs = document.getElementById('chat-messages-container');
     if (msgs) msgs.scrollTop = msgs.scrollHeight;
   },
 
   /* ── Role Management ──────────────────────────────────────── */
   switchRole(role) {
-    STATE.role = role;
+    STATE.currentRole = role;
     
     document.querySelectorAll('.demo-pills .demo-pill').forEach(btn => btn.classList.remove('active'));
     const btn = document.getElementById(`btn-${role}`);
@@ -118,44 +118,44 @@ const App = {
       App.showToast('Switched to User View');
     } else if (role === 'astrologer') {
       Router.reset('astro-dashboard');
-      App.showToast('Switched to Expert View');
+      App.showToast('Switched to Astrologer Partner View');
     }
   },
 
-  /* ── Toast Overlay Creator ────────────────────────────────── */
-  showToast(message) {
-    let existing = document.querySelector('.toast');
-    if (existing) existing.remove();
-
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.innerText = message;
+  /* ── Toast Notifications ──────────────────────────────────── */
+  showToast(message, duration = 2400) {
+    let toast = document.getElementById('global-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'global-toast';
+      toast.className = 'global-toast';
+      document.body.appendChild(toast);
+    }
+    toast.innerHTML = `<span>${message}</span>`;
+    toast.classList.add('show');
     
-    const viewport = document.getElementById('screen-viewport');
-    if (viewport) {
-      viewport.appendChild(toast);
-      setTimeout(() => {
-        if (toast.parentNode) toast.remove();
-      }, 2600);
-    }
+    clearTimeout(this._toastTimeout);
+    this._toastTimeout = setTimeout(() => {
+      toast.classList.remove('show');
+    }, duration);
   },
 
-  /* ── Auth Service ─────────────────────────────────────────── */
+  /* ── Authentication Service ───────────────────────────────── */
   AuthService: {
     handlePhoneSubmit() {
       const input = document.getElementById('phone-input');
-      const val = input ? input.value.trim().replace(/\D/g, '') : '';
-      if (val.length !== 10) {
+      const phone = input ? input.value.trim() : '9876543210';
+      if (!phone || phone.length < 10) {
         App.showToast('Please enter a valid 10-digit mobile number');
         return;
       }
-      DATA.currentUser.phone = `+91 ${val.slice(0,5)} ${val.slice(5)}`;
-      Storage.saveState();
+      DATA.currentUser.phone = `+91 ${phone}`;
+      Storage.saveState(DATA);
+      App.showToast('OTP sent to ' + DATA.currentUser.phone + ' (Demo: 123456)');
       Router.go('otp-verify');
     },
 
     handleOtpInput(input, index) {
-      input.value = input.value.replace(/\D/g, '');
       if (input.value.length === 1 && index < 6) {
         const next = document.getElementById(`otp-${index + 1}`);
         if (next) next.focus();
@@ -163,34 +163,30 @@ const App = {
     },
 
     verifyOtp() {
-      let entered = '';
+      let otp = '';
       for (let i = 1; i <= 6; i++) {
-        const box = document.getElementById(`otp-${i}`);
-        entered += (box ? box.value : '');
+        const el = document.getElementById(`otp-${i}`);
+        if (el) otp += el.value;
       }
-      if (entered === '123456' || entered.length === 6) {
+      if (otp === '123456' || otp.length === 6) {
         DATA.currentUser.isLoggedIn = true;
-        Storage.saveState();
-        if (DATA.currentUser.profileCompleted) {
-          Router.reset('home');
-          App.showToast('Welcome back, ' + DATA.currentUser.name.split(' ')[0] + '!');
-        } else {
+        Storage.saveState(DATA);
+        App.showToast('Login Successful! Welcome to AstroTalkz.');
+        if (!DATA.currentUser.name || DATA.currentUser.name === 'User') {
           Router.go('onboarding-name');
+        } else {
+          Router.reset('home');
         }
       } else {
         App.showToast('Invalid OTP. Demo OTP is 123456');
       }
     },
 
-    resendOtp() {
-      App.showToast('Demo OTP 123456 resent to ' + DATA.currentUser.phone);
-    },
-
     googleLogin() {
       App.showToast('Authenticating with Google...');
       setTimeout(() => {
         DATA.currentUser.isLoggedIn = true;
-        Storage.saveState();
+        Storage.saveState(DATA);
         Router.reset('home');
         App.showToast('Welcome to AstroTalkz!');
       }, 700);
@@ -200,7 +196,7 @@ const App = {
       const nameInput = document.getElementById('ob-name');
       if (nameInput && nameInput.value.trim()) {
         DATA.currentUser.name = nameInput.value.trim();
-        Storage.saveState();
+        Storage.saveState(DATA);
       }
       Router.go('onboarding-dob');
     },
@@ -212,22 +208,21 @@ const App = {
       if (dob && dob.value) DATA.currentUser.dob = dob.value;
       if (time && time.value) DATA.currentUser.birthTime = time.value;
       if (place && place.value) DATA.currentUser.birthPlace = place.value;
-      DATA.currentUser.profileCompleted = true;
       DATA.currentUser.isLoggedIn = true;
-      Storage.saveState();
+      Storage.saveState(DATA);
       Router.reset('home');
       App.showToast('Welcome ' + DATA.currentUser.name.split(' ')[0] + '! Profile setup completed.');
     },
 
     logout() {
       DATA.currentUser.isLoggedIn = false;
-      Storage.saveState();
+      Storage.saveState(DATA);
       Router.reset('user-login');
       App.showToast('Signed out successfully');
     }
   },
 
-  /* ── Astrologer & Discovery Service ───────────────────────── */
+  /* ── Astrologer Discovery & Filtering ─────────────────────── */
   AstrologerService: {
     getFilteredList() {
       let list = [...DATA.astrologers];
@@ -268,12 +263,8 @@ const App = {
         DATA.favourites.push(id);
         App.showToast('Added to favourites ❤️');
       }
-      Storage.saveState();
-      App.render(STATE.currentScreen, Router.current() ? Router.current().params : {});
-    },
-
-    isFavourite(id) {
-      return DATA.favourites.includes(id);
+      Storage.saveState(DATA);
+      App.render(STATE.activeScreen, Router.current() ? Router.current().params : {});
     },
 
     setSearch(val) {
@@ -290,7 +281,7 @@ const App = {
     },
 
     setTypeFilter(type) {
-      STATE.consultTypeFilter = type;
+      STATE.consultTypeFilter = STATE.consultTypeFilter === type ? 'All' : type;
       App.render('consult');
     },
 
@@ -303,220 +294,80 @@ const App = {
   /* ── Booking & Checkout Service ───────────────────────────── */
   BookingService: {
     startBookingFlow(astrologerId, type) {
-      STATE.selectedAstrologerId = astrologerId || "AST-001";
+      const astro = DATA.astrologers.find(a => a.id === astrologerId) || DATA.astrologers[0];
+      STATE.selectedAstrologerId = astro.id;
       STATE.selectedConsultationType = type === 'call' ? 'call' : 'chat';
-      STATE.selectedDuration = 15;
-      STATE.appliedCoupon = null;
-      Router.go('booking-checkout');
-    },
-
-    setDuration(mins) {
-      STATE.selectedDuration = mins;
-      App.render('booking-checkout');
-    },
-
-    setDate(d) {
-      STATE.selectedDate = d;
-      App.render('booking-checkout');
-    },
-
-    setTime(t) {
-      STATE.selectedTime = t;
-      App.render('booking-checkout');
-    },
-
-    applyCouponCode(code) {
-      const coupon = DATA.offers.find(o => o.code.toUpperCase() === (code || '').toUpperCase().trim());
-      if (!coupon) {
-        App.showToast('Invalid Coupon Code');
-        return;
-      }
-      STATE.appliedCoupon = coupon;
-      App.showToast('Coupon ' + coupon.code + ' applied successfully! 🎉');
-      App.render('booking-checkout');
-    },
-
-    calculateBookingTotal(astro, type, duration) {
-      const rate = type === 'call' ? astro.callRate : astro.chatRate;
-      const subtotal = rate * duration;
-      let discount = 0;
-      if (STATE.appliedCoupon) {
-        if (STATE.appliedCoupon.type === 'fixed') {
-          discount = STATE.appliedCoupon.discount;
-        } else if (STATE.appliedCoupon.type === 'percent') {
-          discount = Math.min(Math.round((subtotal * STATE.appliedCoupon.discount) / 100), STATE.appliedCoupon.maxDiscount || 999);
-        }
-      }
-      const total = Math.max(0, subtotal - discount);
-      return { rate, subtotal, discount, total };
-    },
-
-    executeBooking() {
-      const astro = DATA.astrologers.find(a => a.id === STATE.selectedAstrologerId) || DATA.astrologers[0];
-      const { total, rate } = this.calculateBookingTotal(astro, STATE.selectedConsultationType, STATE.selectedDuration);
       
-      if (DATA.currentUser.walletBalance < total) {
-        App.pendingCheckoutReturn = true;
-        App.showToast('Insufficient wallet balance (₹' + DATA.currentUser.walletBalance + '). Please recharge.');
-        Router.go('wallet-topup');
-        return;
+      if (type === 'call') {
+        Router.go('audio-call', { id: astro.id });
+      } else {
+        Router.go('chat', { id: astro.id });
       }
-
-      // Deduct wallet
-      DATA.currentUser.walletBalance -= total;
-      
-      // Create transaction
-      const txnId = 'TXN-' + Math.floor(1000 + Math.random() * 9000);
-      DATA.transactions.unshift({
-        id: txnId,
-        date: "Today",
-        time: new Date().toLocaleTimeString('en', {hour:'2-digit', minute:'2-digit'}),
-        type: STATE.selectedConsultationType,
-        title: (STATE.selectedConsultationType === 'call' ? 'Audio Call: ' : 'Chat: ') + astro.name,
-        amount: total,
-        isCredit: false,
-        status: "Success"
-      });
-
-      // Create Booking
-      const bId = 'BK-' + Math.floor(100000 + Math.random() * 900000);
-      const newBooking = {
-        id: bId,
-        astrologerId: astro.id,
-        astrologerName: astro.name,
-        astrologerTitle: astro.title,
-        astrologerAvatar: astro.avatar,
-        type: STATE.selectedConsultationType === 'call' ? 'Audio Call' : 'Chat',
-        date: STATE.selectedDate,
-        time: STATE.selectedTime,
-        duration: STATE.selectedDuration + ' Minutes',
-        amount: total,
-        ratePerMin: rate,
-        topic: STATE.selectedBookingTopic || "Life & Career Guidance",
-        userNote: (document.getElementById('booking-notes') ? document.getElementById('booking-notes').value : '') || "Astrological consultation session.",
-        status: "upcoming",
-        paymentStatus: "Paid",
-        bookedOn: "Today"
-      };
-      DATA.bookings.unshift(newBooking);
-
-      // Add Notification
-      DATA.notifications.unshift({
-        id: 'NOTIF-' + Date.now(),
-        title: 'Booking Confirmed!',
-        message: `Your ${newBooking.type} with ${astro.name} is booked for ${STATE.selectedDate} at ${STATE.selectedTime}.`,
-        time: 'Just Now',
-        read: false,
-        type: 'booking'
-      });
-
-      Storage.saveState();
-      Router.go('booking-success', { bookingId: bId });
     },
 
     cancelBooking(bookingId) {
       const b = DATA.bookings.find(x => x.id === bookingId);
       if (!b) return;
       b.status = 'cancelled';
-      b.refundStatus = 'Refunded to Wallet';
       DATA.currentUser.walletBalance += b.amount;
       
       DATA.transactions.unshift({
-        id: 'TXN-' + Math.floor(1000 + Math.random() * 9000),
+        id: 'tx_' + Date.now(),
+        title: "Refund for " + b.id,
+        method: "Wallet",
         date: "Today",
         time: "Just Now",
-        type: "refund",
-        method: "Wallet",
-        title: "Refund: Cancelled Session " + b.id,
         amount: b.amount,
         isCredit: true,
         status: "Success"
       });
 
-      Storage.saveState();
-      App.showToast(`Booking cancelled. ₹${b.amount} refunded to wallet.`);
+      Storage.saveState(DATA);
+      App.showToast(`Booking cancelled. ₹${b.amount} refunded to your wallet.`);
       App.render('bookings');
     }
   },
 
-  /* ── Wallet Service ───────────────────────────────────────── */
+  /* ── Wallet & Recharge Service ────────────────────────────── */
   WalletService: {
     selectPreset(amt) {
-      STATE.selectedTopup = amt;
-      const input = document.getElementById('topup-custom-input');
-      if (input) input.value = amt;
-      document.querySelectorAll('.topup-option').forEach(el => {
-        if (el.innerText.includes(amt)) el.classList.add('selected');
-        else el.classList.remove('selected');
-      });
+      STATE.selectedTopup = amt || 500;
       const btn = document.getElementById('btn-pay-wallet');
-      if (btn) btn.innerText = `Recharge ₹${amt} via UPI`;
+      if (btn) btn.innerHTML = `🔒 Proceed to Pay ₹ ${STATE.selectedTopup}`;
+      App.render('wallet-topup');
     },
 
-    processRecharge() {
-      const input = document.getElementById('topup-custom-input');
-      const amt = input ? (parseInt(input.value) || STATE.selectedTopup || 500) : 500;
-      
+    processRecharge(method = 'UPI') {
+      const amt = STATE.selectedTopup || 500;
       const btn = document.getElementById('btn-pay-wallet');
-      if (btn) btn.innerHTML = '<i class="bi bi-arrow-repeat spin me-2"></i> Processing UPI Payment...';
-      
+      if (btn) btn.innerHTML = '<i class="bi bi-arrow-repeat spin me-2"></i> Processing payment...';
+
       setTimeout(() => {
         DATA.currentUser.walletBalance += amt;
         
         DATA.transactions.unshift({
-          id: 'TXN-' + Math.floor(1000 + Math.random() * 9000),
+          id: 'tx_' + Date.now(),
+          title: "Wallet Top Up",
+          method: method,
           date: "Today",
           time: new Date().toLocaleTimeString('en', {hour:'2-digit', minute:'2-digit'}),
-          type: "topup",
-          method: "UPI",
-          title: "Wallet Recharge",
           amount: amt,
           isCredit: true,
           status: "Success"
         });
 
         DATA.notifications.unshift({
-          id: 'NOTIF-' + Date.now(),
-          title: 'Wallet Recharge Successful',
-          message: `₹${amt} has been credited to your VoraTalk balance.`,
-          time: 'Just Now',
-          read: false,
-          type: 'wallet'
+          id: 'notif_' + Date.now(),
+          title: "Wallet Top Up Successful 🎉",
+          message: `₹ ${amt} has been credited to your AstroTalkz wallet via ${method}.`,
+          time: "Just Now",
+          read: false
         });
 
-        Storage.saveState();
-        App.showToast(`₹${amt} added to wallet successfully! 🎉`);
-        
-        if (App.pendingCheckoutReturn) {
-          App.pendingCheckoutReturn = false;
-          Router.go('booking-checkout');
-        } else {
-          Router.go('wallet-topup');
-        }
-      }, 1000);
-    }
-  },
-
-  /* ── Consultation Session (Chat & Audio Call) ──────────────── */
-  ConsultationService: {
-    startChat(astroId) {
-      const astro = DATA.astrologers.find(a => a.id === astroId) || DATA.astrologers[0];
-      if (DATA.currentUser.walletBalance < astro.chatRate * 5) {
-        App.showToast(`Minimum ₹${astro.chatRate * 5} balance required. Please recharge.`);
+        Storage.saveState(DATA);
+        App.showToast(`₹ ${amt} added to wallet successfully! 🎉`);
         Router.go('wallet-topup');
-        return;
-      }
-      Router.go('chat', { id: astro.id });
-    },
-
-    startAudioCall(astroId) {
-      const astro = DATA.astrologers.find(a => a.id === astroId) || DATA.astrologers[0];
-      if (DATA.currentUser.walletBalance < astro.callRate * 5) {
-        App.showToast(`Minimum ₹${astro.callRate * 5} balance required. Please recharge.`);
-        Router.go('wallet-topup');
-        return;
-      }
-      Router.go('audio-call', { id: astro.id });
+      }, 750);
     }
   },
 
@@ -525,29 +376,26 @@ const App = {
     const astro = DATA.astrologers.find(a => a.id === astroId) || DATA.astrologers[0];
     STATE.selectedAstrologerId = astro.id;
     
-    // Ensure chat messages list exists
     if (!DATA.chatMessages[astro.id]) {
       DATA.chatMessages[astro.id] = [
-        { id: 1, sender: "astrologer", text: `Namaste Priya ji! I am ${astro.name}. I am reviewing your birth chart. Please share what you would like guidance on today.`, time: "Just Now" }
+        { id: "m1", sender: "user", text: "Namaste! I want to know about my career growth and future opportunities.", time: "09:30 AM" },
+        { id: "m2", sender: "astrologer", text: "Namaste! 🙏\nSure, I will analyze your career path and future opportunities. Please share your birth details to get started.", time: "09:31 AM" }
       ];
     }
 
-    // Live timer countdown
-    STATE.chatSecondsRemaining = 900; // 15 mins
     clearInterval(this.chatTimerInterval);
+    let sec = 504; // 00:08:24
     const timerDisplay = document.getElementById('chat-timer-display');
     const spentDisplay = document.getElementById('chat-spent-display');
-    
-    let elapsedSec = 0;
+
     this.chatTimerInterval = setInterval(() => {
-      elapsedSec++;
-      STATE.chatSecondsRemaining--;
-      const mm = String(Math.floor(elapsedSec / 60)).padStart(2, '0');
-      const ss = String(elapsedSec % 60).padStart(2, '0');
+      sec++;
+      const mm = String(Math.floor(sec / 60)).padStart(2, '0');
+      const ss = String(sec % 60).padStart(2, '0');
       if (timerDisplay) timerDisplay.innerText = `${mm}:${ss}`;
       
-      const spent = Math.ceil(elapsedSec / 60) * astro.chatRate;
-      if (spentDisplay) spentDisplay.innerText = `₹${spent}`;
+      const spent = Math.ceil(sec / 60) * astro.chatRate;
+      if (spentDisplay) spentDisplay.innerText = `₹ ${spent} (₹${astro.chatRate}/m)`;
     }, 1000);
   },
 
@@ -557,12 +405,12 @@ const App = {
     const text = input.value.trim();
     input.value = '';
 
-    const astroId = STATE.selectedAstrologerId || "AST-001";
+    const astroId = STATE.selectedAstrologerId || "astro_01";
     const timeStr = new Date().toLocaleTimeString('en', {hour:'2-digit', minute:'2-digit'});
 
     if (!DATA.chatMessages[astroId]) DATA.chatMessages[astroId] = [];
     DATA.chatMessages[astroId].push({
-      id: Date.now(),
+      id: "usr_" + Date.now(),
       sender: "user",
       text: text,
       time: timeStr
@@ -571,94 +419,90 @@ const App = {
     const msgsContainer = document.getElementById('chat-messages-container');
     if (msgsContainer) {
       const bubble = document.createElement('div');
-      bubble.className = 'chat-msg-user';
-      bubble.style = "align-self:flex-end; max-width:80%; background:linear-gradient(135deg,#5b21b6,#7c3aed); color:white; padding:10px 14px; border-radius:14px 14px 2px 14px; font-size:0.8rem; margin-bottom:8px;";
-      bubble.innerHTML = `${text} <div style="font-size:0.6rem; color:rgba(255,255,255,0.6); text-align:right; margin-top:2px;">${timeStr} ✓✓</div>`;
+      bubble.style = "display:flex; gap:8px; align-self:flex-end; max-width:82%; margin-bottom:8px;";
+      bubble.innerHTML = `
+        <div style="background:linear-gradient(135deg,#5b21b6,#7c3aed); color:white; padding:10px 14px; border-radius:16px 16px 2px 16px; font-size:0.78rem; line-height:1.4;">
+          ${text}
+          <div style="font-size:0.58rem; color:rgba(255,255,255,0.6); text-align:right; margin-top:4px;">${timeStr} ✓✓</div>
+        </div>
+      `;
       msgsContainer.appendChild(bubble);
       msgsContainer.scrollTop = msgsContainer.scrollHeight;
     }
 
     // Simulated astrologer response
     setTimeout(() => {
-      let replyText = "I have noted your query. Based on your Gemini Lagna and Mars placement, your current period is transitioning into a fruitful phase. Let's do a simple Surya Arghya remedy daily.";
+      let replyText = "I have noted your query. Based on your Gemini Lagna and Jupiter's transit in your 10th house, your current period is transitioning into a fruitful phase. Let's do a simple Surya Arghya remedy daily.";
       const low = text.toLowerCase();
       if (low.includes('career') || low.includes('job') || low.includes('promotion')) {
-        replyText = "Your 10th house of career shows Jupiter's beneficial aspect. The months between October and December 2026 bring a stellar promotion opportunity. Maintain focus.";
+        replyText = "Your 10th house of career shows Jupiter's beneficial aspect. The months between August and November 2026 bring a stellar promotion opportunity. Maintain focus.";
       } else if (low.includes('love') || low.includes('marriage') || low.includes('relationship')) {
-        replyText = "Venus is in your 10th house moving into 11th. Relationship harmony is deeply favored. Any misunderstandings will dissolve in the coming 3 weeks.";
+        replyText = "Venus is in your 7th house moving into 11th. Relationship harmony is deeply favored. Any misunderstandings will dissolve in the coming 3 weeks.";
       } else if (low.includes('finance') || low.includes('money')) {
-        replyText = "Your 2nd house has Rahu in Gemini, indicating rapid wealth gains with careful expense control. Wearing an Emerald on Wednesday will enhance stability.";
+        replyText = "Your 2nd house has strong planetary support, indicating rapid wealth gains with careful expense control. Wearing a Ruby or chanting Gayatri Mantra will enhance stability.";
       }
 
       DATA.chatMessages[astroId].push({
-        id: Date.now() + 1,
+        id: "astro_" + Date.now(),
         sender: "astrologer",
         text: replyText,
         time: new Date().toLocaleTimeString('en', {hour:'2-digit', minute:'2-digit'})
       });
-      Storage.saveState();
+      Storage.saveState(DATA);
 
       if (msgsContainer) {
+        const astro = DATA.astrologers.find(a => a.id === astroId) || DATA.astrologers[0];
         const astroBubble = document.createElement('div');
-        astroBubble.className = 'chat-msg-astro';
-        astroBubble.style = "align-self:flex-start; max-width:80%; background:#160d33; border:1px solid rgba(139,92,246,0.3); color:white; padding:10px 14px; border-radius:14px 14px 14px 2px; font-size:0.8rem; margin-bottom:8px;";
-        astroBubble.innerHTML = `${replyText} <div style="font-size:0.6rem; color:#9ca3af; margin-top:2px;">${new Date().toLocaleTimeString('en', {hour:'2-digit', minute:'2-digit'})}</div>`;
+        astroBubble.style = "display:flex; gap:8px; align-self:flex-start; max-width:82%; margin-bottom:8px;";
+        astroBubble.innerHTML = `
+          <img src="${astro.avatar}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; margin-top:2px;">
+          <div style="background:#160d33; border:1px solid rgba(139,92,246,0.25); color:white; padding:10px 14px; border-radius:16px 16px 16px 2px; font-size:0.78rem; line-height:1.4;">
+            ${replyText}
+            <div style="font-size:0.58rem; color:#9ca3af; text-align:left; margin-top:4px;">${new Date().toLocaleTimeString('en', {hour:'2-digit', minute:'2-digit'})}</div>
+          </div>
+        `;
         msgsContainer.appendChild(astroBubble);
         msgsContainer.scrollTop = msgsContainer.scrollHeight;
       }
     }, 1200);
   },
 
-  sendQuickChat(text) {
-    const input = document.getElementById('chat-input-field');
-    if (input) {
-      input.value = text;
-      this.sendChatMessage();
-    }
-  },
-
   endChatConsultation() {
     clearInterval(this.chatTimerInterval);
     const astro = DATA.astrologers.find(a => a.id === STATE.selectedAstrologerId) || DATA.astrologers[0];
-    const spent = astro.chatRate * 5;
+    const spent = astro.chatRate * 8;
     DATA.currentUser.walletBalance = Math.max(0, DATA.currentUser.walletBalance - spent);
-    
+
     DATA.transactions.unshift({
-      id: 'TXN-' + Math.floor(1000 + Math.random() * 9000),
+      id: "tx_" + Date.now(),
+      title: "Chat Consultation",
+      astrologer: astro.name,
       date: "Today",
       time: "Just Now",
-      type: "chat",
-      title: "Live Chat: " + astro.name,
       amount: spent,
       isCredit: false,
-      status: "Success"
+      status: "Completed"
     });
 
-    Storage.saveState();
-    App.showToast(`Chat ended. ₹${spent} deducted from wallet.`);
-    Router.go('consult-summary', { astroId: astro.id, type: 'Chat', amount: spent });
+    Storage.saveState(DATA);
+    App.showToast(`Chat ended. ₹ ${spent} deducted from wallet.`);
+    Router.go('home');
   },
 
-  /* ── Live Audio Call Logic ────────────────────────────────── */
+  /* ── Simulated Audio Call ─────────────────────────────────── */
   initAudioCallSession(astroId) {
     const astro = DATA.astrologers.find(a => a.id === astroId) || DATA.astrologers[0];
     STATE.selectedAstrologerId = astro.id;
-    STATE.isMuted = false;
-    STATE.isSpeaker = false;
     
-    let sec = 0;
+    let sec = 166; // 00:02:46
     clearInterval(this.callTimerInterval);
     const timerDisplay = document.getElementById('audio-timer-display');
-    const spentDisplay = document.getElementById('audio-spent-display');
 
     this.callTimerInterval = setInterval(() => {
       sec++;
       const mm = String(Math.floor(sec / 60)).padStart(2, '0');
       const ss = String(sec % 60).padStart(2, '0');
       if (timerDisplay) timerDisplay.innerText = `${mm}:${ss}`;
-      
-      const spent = Math.ceil(sec / 60) * astro.callRate;
-      if (spentDisplay) spentDisplay.innerText = `₹${spent} (₹${astro.callRate}/min)`;
     }, 1000);
   },
 
@@ -666,48 +510,222 @@ const App = {
     STATE.isMuted = !STATE.isMuted;
     const btn = document.getElementById('btn-mute-toggle');
     if (btn) {
-      btn.style.background = STATE.isMuted ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.08)';
+      btn.style.background = STATE.isMuted ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)';
       btn.style.color = STATE.isMuted ? '#f87171' : 'white';
     }
     App.showToast(STATE.isMuted ? 'Microphone Muted 🔇' : 'Microphone Unmuted 🎙️');
   },
 
   toggleSpeaker() {
-    STATE.isSpeaker = !STATE.isSpeaker;
+    STATE.isSpeakerOn = !STATE.isSpeakerOn;
     const btn = document.getElementById('btn-speaker-toggle');
     if (btn) {
-      btn.style.background = STATE.isSpeaker ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.08)';
-      btn.style.color = STATE.isSpeaker ? '#4ade80' : 'white';
+      btn.style.background = STATE.isSpeakerOn ? 'rgba(34,197,94,0.35)' : 'rgba(255,255,255,0.08)';
+      btn.style.color = STATE.isSpeakerOn ? '#4ade80' : 'white';
     }
-    App.showToast(STATE.isSpeaker ? 'Speakerphone Active 🔊' : 'Earphone Mode 🔈');
+    App.showToast(STATE.isSpeakerOn ? 'Speakerphone ON 🔊' : 'Earphone Mode 🔈');
   },
 
   endAudioCallConsultation() {
     clearInterval(this.callTimerInterval);
     const astro = DATA.astrologers.find(a => a.id === STATE.selectedAstrologerId) || DATA.astrologers[0];
-    const spent = astro.callRate * 5;
+    const spent = astro.callRate * 3;
     DATA.currentUser.walletBalance = Math.max(0, DATA.currentUser.walletBalance - spent);
 
     DATA.transactions.unshift({
-      id: 'TXN-' + Math.floor(1000 + Math.random() * 9000),
+      id: 'tx_' + Date.now(),
+      title: "Audio Call Consultation",
+      astrologer: astro.name,
       date: "Today",
       time: "Just Now",
-      type: "call",
-      title: "Audio Call: " + astro.name,
       amount: spent,
       isCredit: false,
-      status: "Success"
+      status: "Completed"
     });
 
-    Storage.saveState();
-    App.showToast(`Call ended. ₹${spent} deducted from wallet.`);
-    Router.go('consult-summary', { astroId: astro.id, type: 'Audio Call', amount: spent });
+    Storage.saveState(DATA);
+    App.showToast(`Call ended. ₹ ${spent} deducted from wallet.`);
+    Router.go('home');
+  },
+
+  /* ── Filter Helpers ───────────────────────────────────────── */
+  filterBookings(tab) {
+    document.querySelectorAll('.filter-tabs .filter-tab').forEach(b => {
+      if (b.innerText.toLowerCase().includes(tab.toLowerCase())) b.classList.add('active');
+      else b.classList.remove('active');
+    });
+    App.showToast(`Showing ${tab} bookings`);
+  },
+
+  filterTransactions(tab) {
+    document.querySelectorAll('.filter-tabs .filter-tab').forEach(b => {
+      if (b.innerText.toLowerCase().includes(tab.toLowerCase())) b.classList.add('active');
+      else b.classList.remove('active');
+    });
+    App.showToast(`Showing ${tab} transactions`);
+  },
+
+  /* ── Modals (Zodiac Picker, Filters, Profile Edit) ─────────── */
+  showZodiacPickerModal() {
+    const signs = [
+      { name: "Aries", symbol: "♈", dates: "Mar 21 - Apr 19" },
+      { name: "Taurus", symbol: "♉", dates: "Apr 20 - May 20" },
+      { name: "Gemini", symbol: "♊", dates: "May 21 - Jun 20" },
+      { name: "Cancer", symbol: "♋", dates: "Jun 21 - Jul 22" },
+      { name: "Leo", symbol: "♌", dates: "Jul 23 - Aug 22" },
+      { name: "Virgo", symbol: "♍", dates: "Aug 23 - Sep 22" },
+      { name: "Libra", symbol: "♎", dates: "Sep 23 - Oct 22" },
+      { name: "Scorpio", symbol: "♏", dates: "Oct 23 - Nov 21" },
+      { name: "Sagittarius", symbol: "♐", dates: "Nov 22 - Dec 21" },
+      { name: "Capricorn", symbol: "♑", dates: "Dec 22 - Jan 19" },
+      { name: "Aquarius", symbol: "♒", dates: "Jan 20 - Feb 18" },
+      { name: "Pisces", symbol: "♓", dates: "Feb 19 - Mar 20" }
+    ];
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-backdrop';
+    modal.style = "position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:999; display:flex; align-items:flex-end; justify-content:center;";
+    modal.innerHTML = `
+      <div style="background:#0f0a1e; border:1px solid rgba(139,92,246,0.3); border-radius:24px 24px 0 0; width:100%; max-width:440px; padding:20px; max-height:80vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="font-size:1.1rem; font-weight:700; color:white;">Select Zodiac Sign</h3>
+          <button style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;" onclick="this.closest('.modal-backdrop').remove()">✕</button>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+          ${signs.map(s => `
+            <div onclick="STATE.selectedHoroscopeSign='${s.name}'; App.render('horoscope'); this.closest('.modal-backdrop').remove();" style="background:${STATE.selectedHoroscopeSign===s.name?'rgba(124,58,237,0.35)':'#160e35'}; border:1px solid ${STATE.selectedHoroscopeSign===s.name?'#7c3aed':'rgba(255,255,255,0.08)'}; border-radius:12px; padding:12px 6px; text-align:center; cursor:pointer;">
+              <span style="font-size:1.6rem; display:block; margin-bottom:4px;">${s.symbol}</span>
+              <p style="font-size:0.8rem; font-weight:700; color:white;">${s.name}</p>
+              <p style="font-size:0.55rem; color:#9ca3af; margin-top:2px;">${s.dates}</p>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  },
+
+  toggleConsultFilterModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-backdrop';
+    modal.style = "position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:999; display:flex; align-items:flex-end; justify-content:center;";
+    modal.innerHTML = `
+      <div style="background:#0f0a1e; border:1px solid rgba(139,92,246,0.3); border-radius:24px 24px 0 0; width:100%; max-width:440px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="font-size:1.1rem; font-weight:700; color:white;">Filter &amp; Sort Astrologers</h3>
+          <button style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;" onclick="this.closest('.modal-backdrop').remove()">✕</button>
+        </div>
+
+        <p style="font-size:0.75rem; color:#9ca3af; margin-bottom:8px;">Sort By</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+          <button onclick="App.AstrologerService.setSort('recommended'); this.closest('.modal-backdrop').remove();" class="filter-tab ${STATE.consultSortBy==='recommended'?'active':''}">Recommended</button>
+          <button onclick="App.AstrologerService.setSort('rating'); this.closest('.modal-backdrop').remove();" class="filter-tab ${STATE.consultSortBy==='rating'?'active':''}">Highest Rated ★</button>
+          <button onclick="App.AstrologerService.setSort('price-asc'); this.closest('.modal-backdrop').remove();" class="filter-tab ${STATE.consultSortBy==='price-asc'?'active':''}">Rate: Low to High</button>
+          <button onclick="App.AstrologerService.setSort('experience'); this.closest('.modal-backdrop').remove();" class="filter-tab ${STATE.consultSortBy==='experience'?'active':''}">Experience</button>
+        </div>
+
+        <button class="btn-primary w-full" style="padding:12px; border-radius:12px; font-weight:700;" onclick="this.closest('.modal-backdrop').remove()">
+          Apply Filters
+        </button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  },
+
+  showEditProfileModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-backdrop';
+    modal.style = "position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:999; display:flex; align-items:flex-end; justify-content:center;";
+    modal.innerHTML = `
+      <div style="background:#0f0a1e; border:1px solid rgba(139,92,246,0.3); border-radius:24px 24px 0 0; width:100%; max-width:440px; padding:20px; max-height:85vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="font-size:1.1rem; font-weight:700; color:white;">Edit Profile &amp; Birth Details</h3>
+          <button style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;" onclick="this.closest('.modal-backdrop').remove()">✕</button>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <label style="font-size:0.7rem; color:#9ca3af;">Full Name</label>
+            <input type="text" id="edit-name" value="${DATA.currentUser.name}" class="input-field" style="background:#160e35; border:1px solid rgba(139,92,246,0.3); border-radius:8px; padding:8px 12px; color:white; width:100%;">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:#9ca3af;">Email</label>
+            <input type="email" id="edit-email" value="${DATA.currentUser.email}" class="input-field" style="background:#160e35; border:1px solid rgba(139,92,246,0.3); border-radius:8px; padding:8px 12px; color:white; width:100%;">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:#9ca3af;">Date of Birth</label>
+            <input type="date" id="edit-dob" value="${DATA.currentUser.dob}" class="input-field" style="background:#160e35; border:1px solid rgba(139,92,246,0.3); border-radius:8px; padding:8px 12px; color:white; width:100%;">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:#9ca3af;">Time of Birth</label>
+            <input type="time" id="edit-time" value="${DATA.currentUser.birthTime}" class="input-field" style="background:#160e35; border:1px solid rgba(139,92,246,0.3); border-radius:8px; padding:8px 12px; color:white; width:100%;">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:#9ca3af;">Place of Birth</label>
+            <input type="text" id="edit-place" value="${DATA.currentUser.birthPlace}" class="input-field" style="background:#160e35; border:1px solid rgba(139,92,246,0.3); border-radius:8px; padding:8px 12px; color:white; width:100%;">
+          </div>
+        </div>
+
+        <button class="btn-primary w-full" style="margin-top:18px; padding:12px; border-radius:12px; font-weight:700;" onclick="
+          const n = document.getElementById('edit-name').value;
+          const e = document.getElementById('edit-email').value;
+          const d = document.getElementById('edit-dob').value;
+          const t = document.getElementById('edit-time').value;
+          const p = document.getElementById('edit-place').value;
+          if (n) DATA.currentUser.name = n;
+          if (e) DATA.currentUser.email = e;
+          if (d) DATA.currentUser.dob = d;
+          if (t) DATA.currentUser.birthTime = t;
+          if (p) DATA.currentUser.birthPlace = p;
+          Storage.saveState(DATA);
+          App.showToast('Profile updated successfully ✓');
+          App.render('profile');
+          this.closest('.modal-backdrop').remove();
+        ">
+          Save Changes
+        </button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  },
+
+  showPromoCodeModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-backdrop';
+    modal.style = "position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:999; display:flex; align-items:flex-end; justify-content:center;";
+    modal.innerHTML = `
+      <div style="background:#0f0a1e; border:1px solid rgba(139,92,246,0.3); border-radius:24px 24px 0 0; width:100%; max-width:440px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="font-size:1.1rem; font-weight:700; color:white;">Available Coupons</h3>
+          <button style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;" onclick="this.closest('.modal-backdrop').remove()">✕</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          ${DATA.offers.map(o => `
+            <div style="background:#160e35; border:1px dashed #7c3aed; border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:0.85rem; font-weight:800; color:var(--gold); letter-spacing:0.04em;">${o.code}</span>
+                <p style="font-size:0.68rem; color:white; margin-top:2px;">${o.title}</p>
+                <p style="font-size:0.58rem; color:#9ca3af;">Min recharge ₹${o.minAmount}</p>
+              </div>
+              <button class="btn-primary btn-sm" style="padding:4px 12px; font-size:0.68rem; border-radius:8px;" onclick="
+                STATE.appliedCoupon = '${o.code}';
+                App.showToast('Coupon ${o.code} applied successfully! 🎉');
+                this.closest('.modal-backdrop').remove();
+              ">
+                Apply
+              </button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
   },
 
   /* ── Notifications ────────────────────────────────────────── */
   markAllNotificationsRead() {
     DATA.notifications.forEach(n => n.read = true);
-    Storage.saveState();
+    Storage.saveState(DATA);
     App.showToast('All notifications marked as read ✓');
     App.render('notifications');
   },
@@ -729,7 +747,7 @@ const App = {
     toggleOnline() {
       DATA.currentAstrologer.isOnline = !DATA.currentAstrologer.isOnline;
       DATA.astrologers[0].isOnline = DATA.currentAstrologer.isOnline;
-      Storage.saveState();
+      Storage.saveState(DATA);
       App.showToast(`You are now ${DATA.currentAstrologer.isOnline ? 'ONLINE to users ✓' : 'OFFLINE'}`);
       App.render('astro-dashboard');
     },
@@ -737,27 +755,33 @@ const App = {
     acceptRequest(reqId) {
       const req = DATA.astroConsultations.find(r => r.id === reqId) || DATA.astroConsultations[0];
       req.status = 'active';
-      Storage.saveState();
+      Storage.saveState(DATA);
       Router.go('astro-consult-live', { id: req.id });
-    },
-
-    declineRequest(reqId) {
-      const idx = DATA.astroConsultations.findIndex(r => r.id === reqId);
-      if (idx > -1) {
-        DATA.astroConsultations.splice(idx, 1);
-        Storage.saveState();
-        App.showToast('Request dismissed');
-        App.render('astro-dashboard');
-      }
     },
 
     endLiveSession(reqId) {
       const req = DATA.astroConsultations.find(r => r.id === reqId) || DATA.astroConsultations[0];
       req.status = 'completed';
       DATA.currentAstrologer.todayStats.earnings += req.amount;
-      Storage.saveState();
+      Storage.saveState(DATA);
       App.showToast(`Consultation completed! +₹${req.amount} added to earnings.`);
       Router.go('astro-dashboard');
+    }
+  },
+
+  sendAstroLiveMessage() {
+    const input = document.getElementById('astro-live-input');
+    if (!input || !input.value.trim()) return;
+    const text = input.value.trim();
+    input.value = '';
+
+    const container = document.getElementById('astro-live-messages-scroll');
+    if (container) {
+      const bubble = document.createElement('div');
+      bubble.style = "align-self:flex-end; max-width:82%; background:#22c55e; color:white; padding:10px 14px; border-radius:14px 14px 2px 14px; font-size:0.78rem; margin-top:8px;";
+      bubble.innerHTML = `${text} <div style="font-size:0.58rem; color:rgba(255,255,255,0.7); text-align:right; margin-top:2px;">Just Now ✓✓</div>`;
+      container.appendChild(bubble);
+      container.scrollTop = container.scrollHeight;
     }
   },
 
