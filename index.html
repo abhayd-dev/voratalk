@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AstroTalkz by vorabion — Guidance Written in the Stars</title>
+  <meta name="description" content="AstroTalkz — Your trusted guide to astrology, insights and a better tomorrow. Connect with verified astrologers.">
+  
+  <!-- CSS dependencies: Bootstrap Icons & Custom styling -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       DEMO BAR — fixed top, switches roles
+       ════════════════════════════════════════════════════════════ -->
+  <div class="demo-bar">
+    <div class="demo-brand">
+      <i class="bi bi-moon-stars-fill brand-gold"></i>
+      AstroTalkz <span style="opacity:.6; font-size:.68rem; font-weight:500; margin-left:4px;">PROTOTYPE</span>
+    </div>
+    <div class="demo-pills">
+      <button id="btn-user" class="demo-pill active" onclick="App.switchRole('user')">
+        <i class="bi bi-person-circle me-1"></i>User View
+      </button>
+      <button id="btn-astrologer" class="demo-pill" onclick="App.switchRole('astrologer')">
+        <i class="bi bi-stars me-1"></i>Expert View
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STAGE — dark space background, centers the phone
+       ════════════════════════════════════════════════════════════ -->
+  <div class="stage">
+    <div class="iphone-frame">
+      <div class="iphone-bezel">
+
+        <!-- STATUS BAR -->
+        <div class="iphone-status-bar">
+          <div class="dynamic-island">
+            <div class="di-camera"></div>
+            <div class="di-dot"></div>
+          </div>
+          <span class="status-time">9:41</span>
+          <span class="status-icons">
+            <i class="bi bi-reception-4"></i>
+            <i class="bi bi-wifi"></i>
+            <div class="status-battery">
+              <div class="battery-body">
+                <div class="battery-fill"></div>
+              </div>
+              <div class="battery-tip"></div>
+            </div>
+          </span>
+        </div>
+
+        <!-- SCREEN VIEWPORT -->
+        <div id="screen-viewport"></div>
+
+        <!-- USER BOTTOM NAVIGATION -->
+        <div id="bottom-nav" class="bottom-nav" style="display: none;">
+          <div class="nav-item" id="nav-home" onclick="Router.go('home')">
+            <i class="bi bi-house-door"></i>
+            <span>Home</span>
+          </div>
+          <div class="nav-item" id="nav-consult" onclick="Router.go('consult')">
+            <i class="bi bi-chat-dots"></i>
+            <span>Consult</span>
+          </div>
+          <div class="nav-item nav-center" id="nav-horoscope" onclick="Router.go('horoscope')">
+            <div class="nav-center-bubble">
+              <i class="bi bi-compass"></i>
+            </div>
+            <span>Horoscope</span>
+          </div>
+          <div class="nav-item" id="nav-bookings" onclick="Router.go('bookings')">
+            <i class="bi bi-calendar2-check"></i>
+            <span>Bookings</span>
+          </div>
+          <div class="nav-item" id="nav-profile" onclick="Router.go('profile')">
+            <i class="bi bi-person"></i>
+            <span>Profile</span>
+          </div>
+        </div>
+
+        <!-- EXPERT BOTTOM NAVIGATION -->
+        <div id="astro-bottom-nav" class="bottom-nav astro-nav" style="display: none;">
+          <div class="nav-item" id="anav-dashboard" onclick="Router.go('astro-dashboard')">
+            <i class="bi bi-grid-fill"></i>
+            <span>Dashboard</span>
+          </div>
+          <div class="nav-item" id="anav-consults" onclick="Router.go('astro-consults')">
+            <i class="bi bi-chat-text"></i>
+            <span>Consultations</span>
+          </div>
+          <div class="nav-item" id="anav-earnings" onclick="Router.go('astro-earnings')">
+            <i class="bi bi-wallet2"></i>
+            <span>Earnings</span>
+          </div>
+          <div class="nav-item" id="anav-profile" onclick="Router.go('astro-profile')">
+            <i class="bi bi-person-gear"></i>
+            <span>Profile</span>
+          </div>
+          <div class="nav-item" id="anav-more" onclick="App.showToast('More options coming soon!')">
+            <i class="bi bi-three-dots"></i>
+            <span>More</span>
+          </div>
+        </div>
+
+        <!-- HOME INDICATOR -->
+        <div class="home-indicator">
+          <div class="home-indicator-bar"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT SOURCE LOADING -->
+  <script src="js/data.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/screens.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      App.init();
+    });
+  </script>
+</body>
+</html>
