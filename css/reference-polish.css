@@ -1,0 +1,22 @@
+/* AstroTalkz — Reference UI Polish Layer
+   Presentation-only: existing screens, routes and services remain untouched. */
+:root{--ref-border:rgba(167,139,250,.14);--ref-purple:#7c3aed;--ref-lilac:#c084fc;--ref-gold:#f4c542}
+.iphone-bezel,#screen-viewport{background:#060711}
+#screen-viewport{color:#fff}
+#screen-viewport .card,#screen-viewport .panel,#screen-viewport .section-card,#screen-viewport .consultation-card,#screen-viewport .astro-card,#screen-viewport .login-card{border-color:var(--ref-border);box-shadow:0 10px 30px rgba(0,0,0,.18)}
+#screen-viewport .astro-card,#screen-viewport .login-card,#screen-viewport .wallet-card,#screen-viewport .booking-card,#screen-viewport .profile-card,#screen-viewport .earning-card{background:linear-gradient(145deg,rgba(25,19,45,.96),rgba(10,10,23,.96));border:1px solid rgba(167,139,250,.13)}
+#screen-viewport .btn-primary,#screen-viewport .btn-consult-now,#screen-viewport .btn-purple,#screen-viewport button[class*="primary"]{background:linear-gradient(135deg,#6d28d9,#9333ea)!important;box-shadow:0 7px 20px rgba(124,58,237,.24)}
+#screen-viewport .screen-header{min-height:56px;padding-left:16px;padding-right:16px;background:rgba(6,7,17,.92);border-bottom:1px solid rgba(167,139,250,.08);backdrop-filter:blur(14px)}
+#screen-viewport .header-btn{border-radius:12px;transition:.18s ease}
+#screen-viewport .header-btn:active,#screen-viewport button:active{transform:scale(.97)}
+#screen-viewport .screen,#screen-viewport .screen-body{scrollbar-width:none}
+#screen-viewport .screen::-webkit-scrollbar,#screen-viewport .screen-body::-webkit-scrollbar{display:none}
+#screen-viewport input,#screen-viewport textarea,#screen-viewport select{border-color:rgba(167,139,250,.16)}
+#screen-viewport input:focus,#screen-viewport textarea:focus,#screen-viewport select:focus{outline:none;border-color:rgba(168,85,247,.72)!important;box-shadow:0 0 0 3px rgba(124,58,237,.12)}
+.bottom-nav{border-top:1px solid rgba(167,139,250,.10);background:rgba(8,7,19,.97);backdrop-filter:blur(18px);box-shadow:0 -10px 30px rgba(0,0,0,.22)}
+.bottom-nav .nav-item{transition:color .18s ease,transform .18s ease}
+.bottom-nav .nav-item.active{color:#c084fc}
+.bottom-nav .nav-item.active i{filter:drop-shadow(0 0 8px rgba(168,85,247,.45))}
+.bottom-nav .nav-center-bubble{box-shadow:0 0 0 5px rgba(124,58,237,.08),0 8px 24px rgba(124,58,237,.35)}
+#screen-viewport .astro-status-available,#screen-viewport .status-confirmed,#screen-viewport .status-success{box-shadow:0 0 12px rgba(34,197,94,.08)}
+@media(max-width:700px){.demo-bar{display:none}.stage{padding:0;background:#060711}.iphone-frame{width:100vw;height:100vh;max-width:none}.iphone-bezel{border:0;border-radius:0;box-shadow:none}.home-indicator{display:none}}
