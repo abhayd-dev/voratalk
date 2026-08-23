@@ -243,81 +243,80 @@ const Screens = {
     `;
   },
 
-  /* ── 5. USER HOME SCREEN (Ref: 09.27.04.jpeg) ─────────────── */
+    /* ── 5. USER HOME SCREEN (Ref: 09.27.04.jpeg) ─────────────── */
   home: (params) => {
     return `
-    <div class="screen" style="display:flex; flex-direction:column; background:#08031a; overflow:hidden;">
-      <!-- Hero Background Area with Cosmic Artwork -->
-      <div class="home-hero-bg" style="flex-shrink:0; position:relative; height:270px; overflow:hidden;">
-        <!-- Glowing Cosmic Temple SVG Background -->
-        <div style="position:absolute; right:-20px; top:-20px; width:270px; height:270px; opacity:0.4;">
-          <svg viewBox="0 0 280 280" fill="none">
-            <circle cx="140" cy="140" r="135" stroke="#eab308" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.6"/>
-            <circle cx="140" cy="140" r="105" stroke="#7c3aed" stroke-width="0.8" opacity="0.4"/>
-            <circle cx="140" cy="140" r="75" stroke="#eab308" stroke-width="0.8" opacity="0.3"/>
-            <circle cx="140" cy="140" r="40" fill="rgba(234,179,8,0.2)"/>
-            <circle cx="140" cy="140" r="28" fill="rgba(234,179,8,0.4)"/>
-            <ellipse cx="200" cy="60" rx="18" ry="7" stroke="#a78bfa" stroke-width="1" fill="none" transform="rotate(-20 200 60)"/>
-            <circle cx="200" cy="60" r="8" fill="#7c3aed" opacity="0.8"/>
-          </svg>
+    <div class="screen" style="display:flex; flex-direction:column; background:#08031a; height:100%; overflow:hidden;">
+      <!-- Sticky Top Header -->
+      <div class="screen-header" style="position:sticky; top:0; z-index:50; background:rgba(8,3,26,0.96); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid rgba(255,255,255,0.06); padding:10px 16px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+        <button class="header-btn" onclick="Router.go('app-drawer')"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
+        <div style="text-align:center;">
+          <p style="font-family:'Playfair Display',serif; font-size:1.15rem; font-weight:700; color:white; letter-spacing:0.02em; line-height:1.1;">AstroTalkz</p>
+          <p style="font-size:0.62rem; color:#eab308; letter-spacing:0.08em;">✦ by vorabion ✦</p>
         </div>
-
-        <!-- Top Header -->
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; position:relative; z-index:10;">
-          <button class="header-btn" onclick="Router.go('app-drawer')"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
-          <div style="text-align:center;">
-            <p style="font-family:'Playfair Display',serif; font-size:1.15rem; font-weight:700; color:white; letter-spacing:0.02em;">AstroTalkz</p>
-            <p style="font-size:0.62rem; color:#eab308; letter-spacing:0.08em;">✦ by vorabion ✦</p>
-          </div>
-          <div style="position:relative;">
-            <button class="header-btn" onclick="Router.go('notifications')"><i class="bi bi-bell"></i></button>
-            <span class="badge-dot" style="top:4px; right:4px; display:${DATA.notifications.some(n=>!n.read)?'block':'none'};"></span>
-          </div>
+        <div style="position:relative;">
+          <button class="header-btn" onclick="Router.go('notifications')"><i class="bi bi-bell"></i></button>
+          <span class="badge-dot" style="top:4px; right:4px; display:${DATA.notifications.some(n=>!n.read)?'block':'none'};"></span>
         </div>
+      </div>
 
-        <!-- Greeting & Hero Text -->
-        <div style="padding:6px 18px; position:relative; z-index:10;">
-          <p style="font-size:0.85rem; color:rgba(255,255,255,0.85);">Hello, ${DATA.currentUser.name.split(' ')[0]} ✦</p>
+      <!-- Unified Scrollable Body (Entire Page Scrolls Below Sticky Header) -->
+      <div class="screen-body" style="flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:84px; position:relative;">
+        <!-- Hero Greeting Section with Cosmic Background Art -->
+        <div style="position:relative; padding:16px 18px 24px; overflow:hidden; background:radial-gradient(ellipse at 80% 20%, #2a0d5e 0%, #150630 50%, #08031a 100%);">
+          <!-- Glowing Cosmic Temple SVG Background Art -->
+          <div style="position:absolute; right:-20px; top:-10px; width:260px; height:260px; opacity:0.35; pointer-events:none;">
+            <svg viewBox="0 0 280 280" fill="none">
+              <circle cx="140" cy="140" r="135" stroke="#eab308" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.6"/>
+              <circle cx="140" cy="140" r="105" stroke="#7c3aed" stroke-width="0.8" opacity="0.4"/>
+              <circle cx="140" cy="140" r="75" stroke="#eab308" stroke-width="0.8" opacity="0.3"/>
+              <circle cx="140" cy="140" r="40" fill="rgba(234,179,8,0.2)"/>
+              <circle cx="140" cy="140" r="28" fill="rgba(234,179,8,0.4)"/>
+              <ellipse cx="200" cy="60" rx="18" ry="7" stroke="#a78bfa" stroke-width="1" fill="none" transform="rotate(-20 200 60)"/>
+              <circle cx="200" cy="60" r="8" fill="#7c3aed" opacity="0.8"/>
+            </svg>
+          </div>
+
+          <!-- Greeting & Hero Text -->
+          <p style="font-size:0.85rem; color:rgba(255,255,255,0.85); margin-bottom:2px;">Hello, ${DATA.currentUser.name.split(' ')[0]} ✦</p>
           <h2 style="font-size:1.65rem; font-weight:700; color:white; line-height:1.15; margin-top:2px;">
             Find Guidance,<br><span style="color:#eab308;">Find Clarity</span>
           </h2>
-          <div style="display:flex; align-items:center; gap:8px; margin:6px 0;">
+          <div style="display:flex; align-items:center; gap:8px; margin:8px 0;">
             <div style="width:20px; height:1px; background:#eab308; opacity:0.7;"></div>
             <span style="color:#eab308; font-size:0.7rem;">✦</span>
             <div style="width:20px; height:1px; background:#eab308; opacity:0.7;"></div>
           </div>
-          <p style="font-size:0.7rem; color:#9ca3af; line-height:1.4;">Connect with verified astrologers and get answers to life's important questions.</p>
-        </div>
-      </div>
-
-      <!-- Bottom Sheet Area -->
-      <div class="bottom-sheet">
-        <div class="sheet-handle"></div>
-
-        <!-- Profile + Wallet Pill (Ref: 09.27.04.jpeg) -->
-        <div class="profile-pill" onclick="Router.go('profile')" style="cursor:pointer; margin-bottom:12px;">
-          <div class="flex-start gap-12">
-            <div style="width:42px; height:42px; border-radius:50%; background:rgba(108,43,217,0.25); border:2px solid rgba(139,92,246,0.4); display:flex; align-items:center; justify-content:center;">
-              <i class="bi bi-stars" style="color:#eab308; font-size:1.2rem;"></i>
-            </div>
-            <div>
-              <p style="font-size:0.88rem; font-weight:700; color:white;">${DATA.currentUser.name}</p>
-              <p style="font-size:0.65rem; color:#9ca3af; margin-top:1px;">View your profile &gt;</p>
-            </div>
-          </div>
-          <div class="wallet-pill" onclick="event.stopPropagation(); Router.go('wallet-topup')">
-            <i class="bi bi-wallet2" style="color:#eab308;"></i>
-            <span>₹ ${DATA.currentUser.walletBalance.toFixed(2)}</span>
-            <div style="width:18px; height:18px; border-radius:50%; background:rgba(234,179,8,0.25); display:flex; align-items:center; justify-content:center;">
-              <i class="bi bi-plus" style="color:#eab308; font-size:0.75rem;"></i>
-            </div>
-          </div>
+          <p style="font-size:0.7rem; color:#9ca3af; line-height:1.4; max-width:240px;">Connect with verified astrologers and get answers to life's important questions.</p>
         </div>
 
-        <!-- Scrollable Content -->
-        <div style="flex:1; overflow-y:auto; padding-bottom:70px;" class="screen-body">
+        <!-- Curved Content Container (Rolls seamlessly with scroll) -->
+        <div style="background:#0a0618; border-radius:24px 24px 0 0; margin-top:-14px; padding:16px; position:relative; z-index:2; border-top:1px solid rgba(139,92,246,0.25);">
+          <!-- Handle bar -->
+          <div class="sheet-handle" style="width:38px; height:4px; border-radius:2px; background:rgba(255,255,255,0.2); margin:0 auto 16px;"></div>
+
+          <!-- Profile + Wallet Pill (Ref: 09.27.04.jpeg) -->
+          <div class="profile-pill" onclick="Router.go('profile')" style="cursor:pointer; margin:0 0 16px;">
+            <div class="flex-start gap-12">
+              <div style="width:42px; height:42px; border-radius:50%; background:rgba(108,43,217,0.25); border:2px solid rgba(139,92,246,0.4); display:flex; align-items:center; justify-content:center;">
+                <i class="bi bi-stars" style="color:#eab308; font-size:1.2rem;"></i>
+              </div>
+              <div>
+                <p style="font-size:0.88rem; font-weight:700; color:white;">${DATA.currentUser.name}</p>
+                <p style="font-size:0.65rem; color:#9ca3af; margin-top:1px;">View your profile &gt;</p>
+              </div>
+            </div>
+            <div class="wallet-pill" onclick="event.stopPropagation(); Router.go('wallet-topup')">
+              <i class="bi bi-wallet2" style="color:#eab308;"></i>
+              <span>₹ ${DATA.currentUser.walletBalance.toFixed(2)}</span>
+              <div style="width:18px; height:18px; border-radius:50%; background:rgba(234,179,8,0.25); display:flex; align-items:center; justify-content:center;">
+                <i class="bi bi-plus" style="color:#eab308; font-size:0.75rem;"></i>
+              </div>
+            </div>
+          </div>
+
           <!-- Discover Section -->
-          <p class="section-label" style="padding:0 16px; margin-bottom:8px;">Discover</p>
+          <p class="section-label" style="padding:0 4px; margin-bottom:8px;">Discover</p>
           <div class="menu-group" style="margin-bottom:16px;">
             <div class="menu-row" onclick="Router.go('consult')">
               <div class="menu-row-icon icon-purple"><i class="bi bi-chat-dots-fill"></i></div>
@@ -362,7 +361,7 @@ const Screens = {
           </div>
 
           <!-- Account Section -->
-          <p class="section-label" style="padding:0 16px; margin-bottom:8px;">Account</p>
+          <p class="section-label" style="padding:0 4px; margin-bottom:8px;">Account</p>
           <div class="menu-group" style="margin-bottom:16px;">
             <div class="menu-row" onclick="Router.go('bookings')">
               <div class="menu-row-icon icon-purple"><i class="bi bi-calendar2-check-fill"></i></div>
