@@ -152,6 +152,52 @@ const INITIAL_DATA = {
       call: 15200,
       other: 11730
     },
+        bankDetails: {
+      accountHolder: "Dr. Ananya Sharma",
+      bankName: "HDFC Bank",
+      accountNumberMasked: "•••• •••• •••• 4892",
+      ifsc: "HDFC0001248",
+      upiId: "ananya.sharma@okhdfcbank",
+      status: "Verified & Active",
+      lastPayout: "₹ 38,400 on 15 May 2026",
+      nextPayout: "₹ 45,680 on 01 Jun 2026"
+    },
+    kyc: {
+      panStatus: "Verified ✓",
+      panNumberMasked: "ABCDE••••F",
+      aadharStatus: "Verified ✓",
+      aadharMasked: "•••• •••• 9012",
+      certification: "Vedic Jyotish Acharya (Gold Medalist, BHU)",
+      kycBadge: "Verified Expert Partner 🛡️",
+      verifiedDate: "12 Jan 2023"
+    },
+    notificationSettings: {
+      newConsultation: true,
+      bookingReminder: true,
+      earningsAlerts: true,
+      promotional: false,
+      systemAlerts: true
+    },
+    workingSchedule: {
+      workingDays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      startTime: "09:00 AM",
+      endTime: "09:00 PM",
+      slotDuration: 30,
+      autoAcceptChat: true,
+      autoAcceptCall: true
+    },
+    reviewsList: [
+      { id: "rev_1", clientName: "Priya S.", rating: 5, date: "22 May 2026", type: "Chat", comment: "Dr. Ananya is remarkably accurate! Her career timeline predictions gave me immense confidence. Very calm and polite.", helpful: 14 },
+      { id: "rev_2", clientName: "Amitabh R.", rating: 5, date: "21 May 2026", type: "Audio Call", comment: "Highly detailed horoscope analysis. The gemstone and Surya Arghya remedy worked wonders for my health.", helpful: 9 },
+      { id: "rev_3", clientName: "Kavita M.", rating: 5, date: "19 May 2026", type: "Chat", comment: "Explained the 7th house dasha clearly. No superstitious fear-mongering, only practical Vedic wisdom. Thank you!", helpful: 12 },
+      { id: "rev_4", clientName: "Rohan D.", rating: 4, date: "16 May 2026", type: "Audio Call", comment: "Good consultation on marriage matching and kundli milan. Very satisfied with the guidance.", helpful: 6 }
+    ],
+    astroNotifications: [
+      { id: "anotif_1", title: "New Consultation Request 🔔", message: "Sneha Kapoor requested a 30-min Chat Consultation.", time: "5m ago", read: false, type: "consult" },
+      { id: "anotif_2", title: "Weekly Payout Processed 💰", message: "₹ 9,850 credited to your HDFC bank account.", time: "2h ago", read: false, type: "payout" },
+      { id: "anotif_3", title: "5-Star Review Received ⭐", message: "Priya S. left a 5-star rating for your chat session.", time: "1d ago", read: true, type: "review" },
+      { id: "anotif_4", title: "Platform Maintenance Alert", message: "Scheduled maintenance on Sunday 2:00 AM - 3:00 AM.", time: "2d ago", read: true, type: "system" }
+    ],
     expertise: ["Kundli Analysis", "Career Guidance", "Love & Relationship", "Marriage Matching", "Vastu Consultation", "Finance & Wealth"],
     bio: "I have more than 8 years of experience in Vedic Astrology. I specialize in Kundli Analysis, Career Guidance, Marriage, Relationship, and Vastu. My aim is to provide accurate guidance and simple remedies for a better life."
   },

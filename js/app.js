@@ -31,6 +31,15 @@ const App = {
         App.toggleDrawer(false);
       }
     });
+
+    // Escape key listener for modal/bottomsheet closing
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        BottomSheet.close();
+        ConfirmDialog.close();
+        document.querySelectorAll('.modal-backdrop').forEach(m => m.remove());
+      }
+    });
   },
 
   /* ── Core Rendering & Lifecycle ───────────────────────────── */
@@ -790,5 +799,183 @@ const App = {
     Storage.resetDemo();
     App.showToast('Demo data successfully reset to initial state!');
     Router.reset('home');
+  }
+};
+
+
+/* ── Centralized Modal & Bottom Sheet System ──────────────── */
+const BottomSheet = {
+  open(contentHtml, title = '') {
+    this.close();
+    const overlay = document.createElement('div');
+    overlay.className = 'bottom-sheet-overlay active';
+    overlay.id = 'global-bottom-sheet';
+    overlay.onclick = (e) => {
+      if (e.target === overlay) BottomSheet.close();
+    };
+    overlay.innerHTML = `
+      <div class="bottom-sheet-container">
+        <div class="sheet-handle" style="width:36px; height:4px; border-radius:2px; background:rgba(255,255,255,0.25); margin:8px auto 12px;"></div>
+        ${title ? `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:0 16px 12px; border-bottom:1px solid rgba(255,255,255,0.06);">
+            <h3 style="font-size:1.05rem; font-weight:700; color:white;">${title}</h3>
+            <button style="background:none; border:none; color:#9ca3af; font-size:1.1rem; cursor:pointer;" onclick="BottomSheet.close()">✕</button>
+          </div>
+        ` : ''}
+        <div class="sheet-body" style="padding:16px; max-height:75vh; overflow-y:auto;">
+          ${contentHtml}
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  },
+
+  close() {
+    const existing = document.getElementById('global-bottom-sheet');
+    if (existing) {
+      existing.classList.remove('active');
+      setTimeout(() => existing.remove(), 200);
+    }
+  }
+};
+
+const ConfirmDialog = {
+  open({ title = 'Are you sure?', message = '', confirmText = 'Confirm', cancelText = 'Cancel', onConfirm = null }) {
+    this.close();
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-dialog-overlay active';
+    overlay.id = 'global-confirm-dialog';
+    overlay.onclick = (e) => {
+      if (e.target === overlay) ConfirmDialog.close();
+    };
+    overlay.innerHTML = `
+      <div class="confirm-dialog-card" style="background:#0f0a1e; border:1px solid rgba(139,92,246,0.3); border-radius:20px; padding:20px; width:90%; max-width:340px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.9);">
+        <div style="width:48px; height:48px; border-radius:50%; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); display:flex; align-items:center; justify-content:center; color:#f87171; font-size:1.3rem; margin:0 auto 10px;">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+        <h3 style="font-size:1rem; font-weight:700; color:white; margin-bottom:4px;">${title}</h3>
+        <p style="font-size:0.72rem; color:#9ca3af; line-height:1.4; margin-bottom:16px;">${message}</p>
+        <div style="display:flex; gap:10px;">
+          <button class="btn-outline flex-1" style="padding:10px; border-radius:10px; font-size:0.75rem; font-weight:600;" onclick="ConfirmDialog.close()">${cancelText}</button>
+          <button class="btn-primary flex-1" id="btn-dialog-confirm-action" style="background:#ef4444; border-color:#ef4444; padding:10px; border-radius:10px; font-size:0.75rem; font-weight:700;">${confirmText}</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    const confirmBtn = document.getElementById('btn-dialog-confirm-action');
+    if (confirmBtn) {
+      confirmBtn.onclick = () => {
+        ConfirmDialog.close();
+        if (typeof onConfirm === 'function') onConfirm();
+      };
+    }
+  },
+
+  close() {
+    const existing = document.getElementById('global-confirm-dialog');
+    if (existing) existing.remove();
+  }
+};
+
+const ExpertNavigation = {
+  openMore() {
+    const astro = DATA.currentAstrologer;
+    const html = `
+      <div class="expert-more-menu">
+        <!-- Astrologer Summary Strip -->
+        <div style="display:flex; gap:12px; align-items:center; background:#160e35; border:1px solid rgba(139,92,246,0.3); border-radius:14px; padding:12px; margin-bottom:14px; cursor:pointer;" onclick="ExpertNavigation.navigate('astro-profile-expert')">
+          <div style="position:relative;">
+            <img src="${astro.avatar}" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid #7c3aed;">
+            <div class="${astro.isOnline?'online-dot':'offline-dot'}" style="width:11px; height:11px; border:2px solid #0f0a1e;"></div>
+          </div>
+          <div style="flex:1;">
+            <h4 style="font-size:0.95rem; font-weight:700; color:white;">${astro.fullName}</h4>
+            <p style="font-size:0.65rem; color:var(--gold);">${astro.title}</p>
+            <p style="font-size:0.6rem; color:#4ade80;">⭐ ${astro.rating} (${astro.reviewsCount} Reviews)</p>
+          </div>
+          <i class="bi bi-chevron-right" style="color:#a78bfa;"></i>
+        </div>
+
+        <!-- Menu Actions List -->
+        <div class="menu-group mb-12">
+          <div class="menu-row" onclick="ExpertNavigation.navigate('astro-calendar')">
+            <div class="menu-row-icon icon-purple"><i class="bi bi-calendar-check-fill"></i></div>
+            <div class="menu-row-text"><p class="menu-row-title">Consultation Calendar</p><p class="menu-row-sub">Upcoming &amp; daily slots</p></div>
+            <i class="bi bi-chevron-right menu-row-arrow"></i>
+          </div>
+
+          <div class="menu-row" onclick="ExpertNavigation.navigate('astro-availability')">
+            <div class="menu-row-icon icon-green"><i class="bi bi-clock-history"></i></div>
+            <div class="menu-row-text"><p class="menu-row-title">Working Hours &amp; Slots</p><p class="menu-row-sub">${astro.isOnline?'Currently Online':'Offline'} · Mon-Sat</p></div>
+            <i class="bi bi-chevron-right menu-row-arrow"></i>
+          </div>
+
+          <div class="menu-row" onclick="ExpertNavigation.navigate('astro-reviews')">
+            <div class="menu-row-icon icon-gold"><i class="bi bi-star-fill"></i></div>
+            <div class="menu-row-text"><p class="menu-row-title">Client Reviews &amp; Ratings</p><p class="menu-row-sub">${astro.rating} ★ (${astro.reviewsCount} Verified)</p></div>
+            <i class="bi bi-chevron-right menu-row-arrow"></i>
+          </div>
+
+          <div class="menu-row" onclick="ExpertNavigation.navigate('astro-notifications')">
+            <div class="menu-row-icon icon-blue"><i class="bi bi-bell-fill"></i></div>
+            <div class="menu-row-text"><p class="menu-row-title">Expert Notifications</p><p class="menu-row-sub">New requests &amp; alerts</p></div>
+            <i class="bi bi-chevron-right menu-row-arrow"></i>
+          </div>
+
+          <div class="menu-row" onclick="ExpertNavigation.navigate('astro-payout')">
+            <div class="menu-row-icon icon-green"><i class="bi bi-bank2"></i></div>
+            <div class="menu-row-text"><p class="menu-row-title">Payout &amp; Bank Details</p><p class="menu-row-sub">HDFC Bank · Primary</p></div>
+            <i class="bi bi-chevron-right menu-row-arrow"></i>
+          </div>
+
+          <div class="menu-row" onclick="ExpertNavigation.navigate('astro-verification')">
+            <div class="menu-row-icon icon-teal"><i class="bi bi-shield-check"></i></div>
+            <div class="menu-row-text"><p class="menu-row-title">Verification &amp; KYC</p><p class="menu-row-sub">100% Verified Partner</p></div>
+            <i class="bi bi-chevron-right menu-row-arrow"></i>
+          </div>
+
+          <div class="menu-row" onclick="ExpertNavigation.navigate('astro-notification-settings')">
+            <div class="menu-row-icon icon-purple"><i class="bi bi-sliders"></i></div>
+            <div class="menu-row-text"><p class="menu-row-title">Notification Preferences</p><p class="menu-row-sub">Alert sound &amp; reminders</p></div>
+            <i class="bi bi-chevron-right menu-row-arrow"></i>
+          </div>
+
+          <div class="menu-row" onclick="ExpertNavigation.navigate('astro-support')">
+            <div class="menu-row-icon icon-gold"><i class="bi bi-headset"></i></div>
+            <div class="menu-row-text"><p class="menu-row-title">Astrologer Helpdesk</p><p class="menu-row-sub">24/7 Priority Partner Support</p></div>
+            <i class="bi bi-chevron-right menu-row-arrow"></i>
+          </div>
+
+          <div class="menu-row" onclick="ExpertNavigation.navigate('astro-settings')">
+            <div class="menu-row-icon" style="background:rgba(107,114,128,0.4);"><i class="bi bi-gear-fill" style="color:white;"></i></div>
+            <div class="menu-row-text"><p class="menu-row-title">Partner Settings</p><p class="menu-row-sub">Account &amp; preferences</p></div>
+            <i class="bi bi-chevron-right menu-row-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Logout CTA -->
+        <button class="btn-outline w-full mb-8" style="padding:12px; border-radius:12px; border-color:rgba(239,68,68,0.4); color:#f87171; font-weight:700; font-size:0.8rem;" onclick="
+          ExpertNavigation.closeMore();
+          ConfirmDialog.open({
+            title: 'Logout of Partner Portal?',
+            message: 'You will be logged out of your astrologer session. Do you wish to continue?',
+            confirmText: 'Logout',
+            onConfirm: () => App.AuthService.logout()
+          });
+        ">
+          <i class="bi bi-box-arrow-right me-2"></i> Logout Partner Session
+        </button>
+      </div>
+    `;
+    BottomSheet.open(html, '✦ Expert Menu ✦');
+  },
+
+  closeMore() {
+    BottomSheet.close();
+  },
+
+  navigate(screenId, params = {}) {
+    BottomSheet.close();
+    Router.go(screenId, params);
   }
 };

@@ -1325,3 +1325,61 @@ img { display: block; max-width: 100%; }
 }
 .lucky-label { font-size: 0.58rem; color: var(--text-secondary); margin-bottom: 4px; }
 .lucky-value { font-size: 0.85rem; font-weight: 700; }
+
+/* ── Centralized Bottom Sheet & Dialog Styles ─────────────── */
+.bottom-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.bottom-sheet-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.bottom-sheet-container {
+  background: #0f0a1e;
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.9);
+  transform: translateY(100%);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+.bottom-sheet-overlay.active .bottom-sheet-container {
+  transform: translateY(0);
+}
+
+.confirm-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s ease;
+}
+.confirm-dialog-card {
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes scaleIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

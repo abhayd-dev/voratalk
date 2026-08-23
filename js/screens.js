@@ -2230,5 +2230,467 @@ const Screens = {
       </div>
     </div>
     `;
+  },
+
+  /* ── 30. EXPERT CALENDAR ───────────────────────────────────── */
+  'astro-calendar': (params) => {
+    const astro = DATA.currentAstrologer;
+    return `
+    <div class="screen cosmic-bg" style="display:flex; flex-direction:column;">
+      <div class="screen-header">
+        <button class="header-btn" onclick="Router.back()"><i class="bi bi-arrow-left"></i></button>
+        <div style="font-size:0.95rem; font-weight:700; color:white;">✦ Consultation Calendar ✦</div>
+        <button class="header-btn" onclick="App.showToast('Calendar synced with Google Calendar ✓')"><i class="bi bi-arrow-repeat"></i></button>
+      </div>
+
+      <div class="screen-body pb-nav" style="padding:16px;">
+        <!-- Month Navigation Banner -->
+        <div style="background:#0f0a1e; border:1px solid rgba(139,92,246,0.3); border-radius:14px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <button style="color:#9ca3af; font-size:1.1rem;"><i class="bi bi-chevron-left"></i></button>
+          <div style="text-align:center;">
+            <p style="font-size:0.92rem; font-weight:700; color:white;">May 2026</p>
+            <p style="font-size:0.62rem; color:var(--gold);">12 Sessions Scheduled</p>
+          </div>
+          <button style="color:#9ca3af; font-size:1.1rem;"><i class="bi bi-chevron-right"></i></button>
+        </div>
+
+        <!-- Weekly Strip -->
+        <div style="display:flex; gap:6px; justify-content:space-between; margin-bottom:16px; overflow-x:auto;">
+          ${[
+            { day: 'Wed', date: '20', active: false },
+            { day: 'Thu', date: '21', active: false },
+            { day: 'Fri', date: '22', active: true, today: true },
+            { day: 'Sat', date: '23', active: false },
+            { day: 'Sun', date: '24', active: false },
+            { day: 'Mon', date: '25', active: false },
+            { day: 'Tue', date: '26', active: false }
+          ].map(d => `
+            <div style="flex:1; min-width:40px; background:${d.active?'rgba(124,58,237,0.35)':'#0f0a1e'}; border:1.5px solid ${d.active?'#7c3aed':'rgba(255,255,255,0.06)'}; border-radius:10px; padding:8px 4px; text-align:center; cursor:pointer;" onclick="App.showToast('Selected ' + '${d.day} ${d.date} May')">
+              <p style="font-size:0.6rem; color:#9ca3af;">${d.day}</p>
+              <p style="font-size:0.85rem; font-weight:800; color:white; margin-top:2px;">${d.date}</p>
+              ${d.today ? '<span style="display:inline-block; width:4px; height:4px; border-radius:50%; background:#4ade80; margin-top:2px;"></span>' : ''}
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Today's Schedule -->
+        <div class="flex-between mb-8">
+          <p style="font-size:0.85rem; font-weight:700; color:white;">Today's Schedule (22 May)</p>
+          <span style="font-size:0.65rem; color:#a78bfa;">3 Upcoming</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          ${DATA.astroConsultations.map(c => `
+            <div class="card" style="padding:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="Router.go('astro-consult-detail', {id:'${c.id}'})">
+              <div style="display:flex; gap:10px; align-items:center;">
+                <div style="width:36px; height:36px; border-radius:50%; background:rgba(124,58,237,0.25); display:flex; align-items:center; justify-content:center; color:#c4b5fd; font-size:0.9rem;">
+                  <i class="bi bi-${c.type==='Chat'?'chat-fill':'telephone-fill'}"></i>
+                </div>
+                <div>
+                  <div style="display:flex; align-items:center; gap:4px;">
+                    <p style="font-size:0.85rem; font-weight:700; color:white;">${c.clientName}</p>
+                    <span style="background:rgba(34,197,94,0.15); color:#4ade80; font-size:0.55rem; padding:1px 5px; border-radius:4px;">${c.type}</span>
+                  </div>
+                  <p style="font-size:0.62rem; color:#9ca3af;">${c.time} (${c.duration})</p>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <span style="font-size:0.82rem; font-weight:800; color:#4ade80;">₹ ${c.amount}</span>
+                <span class="badge badge-confirmed" style="display:block; margin-top:2px; font-size:0.55rem;">Confirmed</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+    `;
+  },
+
+  /* ── 31. EXPERT AVAILABILITY ──────────────────────────────── */
+  'astro-availability': (params) => {
+    const astro = DATA.currentAstrologer;
+    const sched = astro.workingSchedule || { workingDays: ["Mon","Tue","Wed","Thu","Fri","Sat"], startTime: "09:00 AM", endTime: "09:00 PM" };
+    return `
+    <div class="screen cosmic-bg" style="display:flex; flex-direction:column;">
+      <div class="screen-header">
+        <button class="header-btn" onclick="Router.back()"><i class="bi bi-arrow-left"></i></button>
+        <div style="font-size:0.95rem; font-weight:700; color:white;">✦ Working Hours &amp; Slots ✦</div>
+        <div style="width:38px;"></div>
+      </div>
+
+      <div class="screen-body pb-nav" style="padding:16px;">
+        <!-- Live Status Card -->
+        <div style="background:#0f0a1e; border:1px solid rgba(139,92,246,0.3); border-radius:14px; padding:14px; display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div>
+            <p style="font-size:0.85rem; font-weight:700; color:${astro.isOnline?'#4ade80':'#f87171'};">
+              ● Consultation Status: ${astro.isOnline ? 'Online' : 'Offline'}
+            </p>
+            <p style="font-size:0.65rem; color:#9ca3af; margin-top:2px;">Turn on to start receiving calls &amp; chats instantly</p>
+          </div>
+          <div onclick="App.ExpertService.toggleOnline(); App.render('astro-availability');" style="width:48px; height:26px; border-radius:13px; background:${astro.isOnline?'#7c3aed':'#374151'}; padding:2px; cursor:pointer; display:flex; align-items:center; justify-content:${astro.isOnline?'flex-end':'flex-start'};">
+            <div style="width:22px; height:22px; border-radius:50%; background:white;"></div>
+          </div>
+        </div>
+
+        <!-- Working Days -->
+        <div class="card mb-14">
+          <p style="font-size:0.8rem; font-weight:700; color:white; margin-bottom:10px;">Working Days</p>
+          <div style="display:flex; gap:6px; justify-content:space-between;">
+            ${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => {
+              const isSel = sched.workingDays && sched.workingDays.includes(d);
+              return `
+                <div style="flex:1; padding:8px 0; text-align:center; border-radius:8px; background:${isSel?'rgba(124,58,237,0.3)':'#08031a'}; border:1px solid ${isSel?'#7c3aed':'rgba(255,255,255,0.06)'}; color:${isSel?'white':'#9ca3af'}; font-size:0.68rem; font-weight:700; cursor:pointer;" onclick="
+                  const idx = DATA.currentAstrologer.workingSchedule.workingDays.indexOf('${d}');
+                  if (idx > -1) DATA.currentAstrologer.workingSchedule.workingDays.splice(idx, 1);
+                  else DATA.currentAstrologer.workingSchedule.workingDays.push('${d}');
+                  Storage.saveState(DATA);
+                  App.render('astro-availability');
+                ">
+                  ${d}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Working Hours Window -->
+        <div class="card mb-14">
+          <p style="font-size:0.8rem; font-weight:700; color:white; margin-bottom:10px;">Daily Consultation Hours</p>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+              <label style="font-size:0.65rem; color:#9ca3af; display:block; margin-bottom:4px;">Start Time</label>
+              <input type="text" value="${sched.startTime}" class="input-field" style="background:#08031a; border:1px solid rgba(139,92,246,0.3); border-radius:8px; padding:8px 10px; color:white; font-size:0.78rem; width:100%;">
+            </div>
+            <div>
+              <label style="font-size:0.65rem; color:#9ca3af; display:block; margin-bottom:4px;">End Time</label>
+              <input type="text" value="${sched.endTime}" class="input-field" style="background:#08031a; border:1px solid rgba(139,92,246,0.3); border-radius:8px; padding:8px 10px; color:white; font-size:0.78rem; width:100%;">
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary w-full" style="padding:12px; border-radius:12px; font-weight:700;" onclick="App.showToast('Availability schedule saved successfully ✓'); Router.go('astro-dashboard');">
+          Save Working Hours
+        </button>
+      </div>
+    </div>
+    `;
+  },
+
+  /* ── 32. EXPERT REVIEWS ───────────────────────────────────── */
+  'astro-reviews': (params) => {
+    const astro = DATA.currentAstrologer;
+    const revs = astro.reviewsList || [];
+    return `
+    <div class="screen cosmic-bg" style="display:flex; flex-direction:column;">
+      <div class="screen-header">
+        <button class="header-btn" onclick="Router.back()"><i class="bi bi-arrow-left"></i></button>
+        <div style="font-size:0.95rem; font-weight:700; color:white;">✦ Client Reviews ✦</div>
+        <div style="width:38px;"></div>
+      </div>
+
+      <div class="screen-body pb-nav" style="padding:16px;">
+        <!-- Overall Rating Summary Card -->
+        <div style="background:linear-gradient(135deg,#1f0c3d,#110626); border:1px solid rgba(139,92,246,0.3); border-radius:16px; padding:16px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h2 style="font-size:2.2rem; font-weight:800; color:white; line-height:1;">${astro.rating} <span style="font-size:1.2rem; color:#eab308;">★</span></h2>
+            <p style="font-size:0.68rem; color:#9ca3af; margin-top:4px;">Based on ${astro.reviewsCount} verified reviews</p>
+            <p style="font-size:0.62rem; color:#4ade80; margin-top:2px;">98.4% Positive Feedback</p>
+          </div>
+          <div style="width:90px; text-align:right; font-size:0.6rem; color:#9ca3af; line-height:1.6;">
+            <div>5 ★ <span style="color:white; font-weight:700;">88%</span></div>
+            <div>4 ★ <span style="color:white; font-weight:700;">10%</span></div>
+            <div>3 ★ <span style="color:white; font-weight:700;">2%</span></div>
+          </div>
+        </div>
+
+        <!-- Reviews List -->
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          ${revs.map(r => `
+            <div class="card" style="padding:12px;">
+              <div class="flex-between mb-4">
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="font-size:0.82rem; font-weight:700; color:white;">${r.clientName}</span>
+                  <span style="font-size:0.55rem; background:rgba(124,58,237,0.3); color:#c4b5fd; padding:1px 5px; border-radius:4px;">${r.type}</span>
+                </div>
+                <span style="color:#eab308; font-size:0.75rem;">${'★'.repeat(r.rating)}</span>
+              </div>
+              <p style="font-size:0.7rem; color:#9ca3af; line-height:1.4;">"${r.comment}"</p>
+              <div class="flex-between" style="margin-top:6px; font-size:0.58rem; color:#6b7280;">
+                <span>${r.date}</span>
+                <span><i class="bi bi-hand-thumbs-up me-1"></i>${r.helpful} found helpful</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+    `;
+  },
+
+  /* ── 33. EXPERT NOTIFICATIONS ─────────────────────────────── */
+  'astro-notifications': (params) => {
+    const astro = DATA.currentAstrologer;
+    const notifs = astro.astroNotifications || [];
+    return `
+    <div class="screen cosmic-bg" style="display:flex; flex-direction:column;">
+      <div class="screen-header">
+        <button class="header-btn" onclick="Router.back()"><i class="bi bi-arrow-left"></i></button>
+        <div style="font-size:0.95rem; font-weight:700; color:white;">Expert Notifications</div>
+        <button class="header-btn" onclick="
+          DATA.currentAstrologer.astroNotifications.forEach(n=>n.read=true);
+          Storage.saveState(DATA);
+          App.showToast('All notifications marked as read ✓');
+          App.render('astro-notifications');
+        "><i class="bi bi-check2-all"></i></button>
+      </div>
+
+      <div class="screen-body pb-nav" style="padding:16px;">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          ${notifs.map(n => `
+            <div class="card" style="padding:12px; border-left:3px solid ${n.read?'rgba(255,255,255,0.1)':'#a78bfa'}; background:${n.read?'#0c0820':'#160e35'};">
+              <div class="flex-between mb-4">
+                <p style="font-size:0.8rem; font-weight:700; color:white;">${n.title}</p>
+                <span style="font-size:0.58rem; color:#9ca3af;">${n.time}</span>
+              </div>
+              <p style="font-size:0.7rem; color:#9ca3af; line-height:1.4;">${n.message}</p>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+    `;
+  },
+
+  /* ── 34. EXPERT PAYOUT & BANK DETAILS ─────────────────────── */
+  'astro-payout': (params) => {
+    const b = DATA.currentAstrologer.bankDetails || {
+      accountHolder: "Dr. Ananya Sharma", bankName: "HDFC Bank", accountNumberMasked: "•••• •••• •••• 4892", ifsc: "HDFC0001248"
+    };
+    return `
+    <div class="screen cosmic-bg" style="display:flex; flex-direction:column;">
+      <div class="screen-header">
+        <button class="header-btn" onclick="Router.back()"><i class="bi bi-arrow-left"></i></button>
+        <div style="font-size:0.95rem; font-weight:700; color:white;">✦ Bank &amp; Payout Details ✦</div>
+        <div style="width:38px;"></div>
+      </div>
+
+      <div class="screen-body pb-nav" style="padding:16px;">
+        <!-- Active Bank Account Card -->
+        <div style="background:linear-gradient(135deg,#1f0c3d,#110626); border:1px solid rgba(139,92,246,0.3); border-radius:16px; padding:16px; margin-bottom:14px;">
+          <div class="flex-between mb-8">
+            <span style="font-size:0.7rem; color:#c4b5fd; font-weight:700;">PRIMARY SETTLEMENT ACCOUNT</span>
+            <span style="background:rgba(34,197,94,0.2); color:#4ade80; font-size:0.58rem; padding:2px 8px; border-radius:10px;">${b.status}</span>
+          </div>
+          <h3 style="font-size:1.1rem; font-weight:800; color:white; margin-bottom:4px;">${b.bankName}</h3>
+          <p style="font-size:0.85rem; color:#eab308; font-family:monospace; letter-spacing:0.05em; margin-bottom:8px;">${b.accountNumberMasked}</p>
+          <div class="flex-between" style="font-size:0.65rem; color:#9ca3af; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">
+            <span>Holder: <strong style="color:white;">${b.accountHolder}</strong></span>
+            <span>IFSC: <strong style="color:white;">${b.ifsc}</strong></span>
+          </div>
+        </div>
+
+        <!-- Payout Cycle Info -->
+        <div class="card mb-14" style="padding:12px;">
+          <p style="font-size:0.78rem; font-weight:700; color:white; margin-bottom:6px;"><i class="bi bi-clock-history text-purple me-1"></i>Automated Settlement Cycle</p>
+          <p style="font-size:0.68rem; color:#9ca3af; line-height:1.4;">Earnings are automatically credited every Monday to your linked verified bank account without any transaction fee.</p>
+        </div>
+
+        <button class="btn-primary w-full" style="padding:12px; border-radius:12px; font-weight:700;" onclick="App.showToast('Withdrawal request submitted to your HDFC account ✓')">
+          Request Instant Payout
+        </button>
+      </div>
+    </div>
+    `;
+  },
+
+  /* ── 35. EXPERT KYC & VERIFICATION ────────────────────────── */
+  'astro-verification': (params) => {
+    const k = DATA.currentAstrologer.kyc || { panStatus: "Verified ✓", aadharStatus: "Verified ✓", certification: "Vedic Jyotish Acharya (Gold Medalist, BHU)" };
+    return `
+    <div class="screen cosmic-bg" style="display:flex; flex-direction:column;">
+      <div class="screen-header">
+        <button class="header-btn" onclick="Router.back()"><i class="bi bi-arrow-left"></i></button>
+        <div style="font-size:0.95rem; font-weight:700; color:white;">✦ Partner KYC &amp; Badges ✦</div>
+        <div style="width:38px;"></div>
+      </div>
+
+      <div class="screen-body pb-nav" style="padding:16px;">
+        <!-- Verified Status Banner -->
+        <div style="background:linear-gradient(135deg,#1f0c3d,#110626); border:1px solid rgba(139,92,246,0.3); border-radius:16px; padding:16px; text-align:center; margin-bottom:14px;">
+          <div style="width:48px; height:48px; border-radius:50%; background:rgba(34,197,94,0.15); border:1.5px solid #22c55e; display:flex; align-items:center; justify-content:center; color:#4ade80; font-size:1.4rem; margin:0 auto 8px;">
+            <i class="bi bi-shield-check"></i>
+          </div>
+          <h3 style="font-size:1.05rem; font-weight:700; color:white;">100% KYC Verified Partner</h3>
+          <p style="font-size:0.65rem; color:#9ca3af; margin-top:2px;">Your verified badge is visible on all marketplace listings.</p>
+        </div>
+
+        <!-- Verification Checklist -->
+        <div class="menu-group mb-14">
+          <div class="menu-row">
+            <div class="menu-row-icon icon-green"><i class="bi bi-person-vcard-fill"></i></div>
+            <div class="menu-row-text">
+              <p class="menu-row-title">PAN Card</p>
+              <p class="menu-row-sub">ABCDE••••F · Verified</p>
+            </div>
+            <span style="font-size:0.65rem; color:#4ade80;">Verified ✓</span>
+          </div>
+          <div class="menu-row">
+            <div class="menu-row-icon icon-green"><i class="bi bi-fingerprint"></i></div>
+            <div class="menu-row-text">
+              <p class="menu-row-title">Aadhaar Verification</p>
+              <p class="menu-row-sub">•••• •••• 9012 · Verified</p>
+            </div>
+            <span style="font-size:0.65rem; color:#4ade80;">Verified ✓</span>
+          </div>
+          <div class="menu-row">
+            <div class="menu-row-icon icon-purple"><i class="bi bi-mortarboard-fill"></i></div>
+            <div class="menu-row-text">
+              <p class="menu-row-title">Astrology Degree / Certificate</p>
+              <p class="menu-row-sub">${k.certification}</p>
+            </div>
+            <span style="font-size:0.65rem; color:#4ade80;">Approved ✓</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    `;
+  },
+
+  /* ── 36. EXPERT NOTIFICATION SETTINGS ─────────────────────── */
+  'astro-notification-settings': (params) => {
+    const s = DATA.currentAstrologer.notificationSettings || { newConsultation: true, bookingReminder: true, earningsAlerts: true, systemAlerts: true };
+    return `
+    <div class="screen cosmic-bg" style="display:flex; flex-direction:column;">
+      <div class="screen-header">
+        <button class="header-btn" onclick="Router.back()"><i class="bi bi-arrow-left"></i></button>
+        <div style="font-size:0.95rem; font-weight:700; color:white;">✦ Notification Preferences ✦</div>
+        <div style="width:38px;"></div>
+      </div>
+
+      <div class="screen-body pb-nav" style="padding:16px;">
+        <div class="menu-group mb-14">
+          <div class="menu-row" onclick="
+            DATA.currentAstrologer.notificationSettings.newConsultation = !DATA.currentAstrologer.notificationSettings.newConsultation;
+            Storage.saveState(DATA);
+            App.render('astro-notification-settings');
+          ">
+            <div class="menu-row-icon icon-purple"><i class="bi bi-bell-fill"></i></div>
+            <div class="menu-row-text">
+              <p class="menu-row-title">New Consultation Alerts</p>
+              <p class="menu-row-sub">Instant sound alert when a user requests chat/call</p>
+            </div>
+            <span style="font-size:0.75rem; color:${s.newConsultation?'#4ade80':'#9ca3af'}; font-weight:700;">${s.newConsultation?'ON':'OFF'}</span>
+          </div>
+
+          <div class="menu-row" onclick="
+            DATA.currentAstrologer.notificationSettings.bookingReminder = !DATA.currentAstrologer.notificationSettings.bookingReminder;
+            Storage.saveState(DATA);
+            App.render('astro-notification-settings');
+          ">
+            <div class="menu-row-icon icon-green"><i class="bi bi-calendar-event-fill"></i></div>
+            <div class="menu-row-text">
+              <p class="menu-row-title">Booking Reminders</p>
+              <p class="menu-row-sub">15-minute advance reminder before scheduled slots</p>
+            </div>
+            <span style="font-size:0.75rem; color:${s.bookingReminder?'#4ade80':'#9ca3af'}; font-weight:700;">${s.bookingReminder?'ON':'OFF'}</span>
+          </div>
+
+          <div class="menu-row" onclick="
+            DATA.currentAstrologer.notificationSettings.earningsAlerts = !DATA.currentAstrologer.notificationSettings.earningsAlerts;
+            Storage.saveState(DATA);
+            App.render('astro-notification-settings');
+          ">
+            <div class="menu-row-icon icon-gold"><i class="bi bi-wallet2"></i></div>
+            <div class="menu-row-text">
+              <p class="menu-row-title">Earnings &amp; Payout Updates</p>
+              <p class="menu-row-sub">Weekly settlement notifications</p>
+            </div>
+            <span style="font-size:0.75rem; color:${s.earningsAlerts?'#4ade80':'#9ca3af'}; font-weight:700;">${s.earningsAlerts?'ON':'OFF'}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    `;
+  },
+
+  /* ── 37. EXPERT HELP & SUPPORT ────────────────────────────── */
+  'astro-support': (params) => {
+    return `
+    <div class="screen cosmic-bg" style="display:flex; flex-direction:column;">
+      <div class="screen-header">
+        <button class="header-btn" onclick="Router.back()"><i class="bi bi-arrow-left"></i></button>
+        <div style="font-size:0.95rem; font-weight:700; color:white;">✦ Astrologer Helpdesk ✦</div>
+        <div style="width:38px;"></div>
+      </div>
+
+      <div class="screen-body pb-nav" style="padding:16px;">
+        <!-- Contact CTA -->
+        <div style="background:linear-gradient(135deg,#1f0c3d,#110626); border:1px solid rgba(139,92,246,0.3); border-radius:16px; padding:16px; text-align:center; margin-bottom:14px;">
+          <h3 style="font-size:1.05rem; font-weight:700; color:white;">Astrologer Partner Desk</h3>
+          <p style="font-size:0.65rem; color:#9ca3af; margin:4px 0 12px;">Dedicated 24/7 priority support for verified astrologers.</p>
+          <button class="btn-primary" style="padding:8px 18px; font-size:0.72rem; border-radius:8px;" onclick="App.showToast('Priority Support: partner-support@vorabion.com')">
+            <i class="bi bi-headset me-1"></i> Contact Partner Manager
+          </button>
+        </div>
+
+        <!-- FAQs -->
+        <p style="font-size:0.8rem; font-weight:700; color:white; margin-bottom:8px;">Frequently Asked Questions</p>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div class="card" style="padding:12px;">
+            <p style="font-size:0.75rem; font-weight:700; color:white;">How are weekly payouts calculated?</p>
+            <p style="font-size:0.68rem; color:#9ca3af; margin-top:3px; line-height:1.4;">Payouts are generated every Sunday night and settled to your bank account on Monday.</p>
+          </div>
+          <div class="card" style="padding:12px;">
+            <p style="font-size:0.75rem; font-weight:700; color:white;">How to change chat / call rate per minute?</p>
+            <p style="font-size:0.68rem; color:#9ca3af; margin-top:3px; line-height:1.4;">Rates can be adjusted in your Expert Profile or requested via your partner manager.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    `;
+  },
+
+  /* ── 38. EXPERT SETTINGS ──────────────────────────────────── */
+  'astro-settings': (params) => {
+    return `
+    <div class="screen cosmic-bg" style="display:flex; flex-direction:column;">
+      <div class="screen-header">
+        <button class="header-btn" onclick="Router.back()"><i class="bi bi-arrow-left"></i></button>
+        <div style="font-size:0.95rem; font-weight:700; color:white;">✦ Partner Settings ✦</div>
+        <div style="width:38px;"></div>
+      </div>
+
+      <div class="screen-body pb-nav" style="padding:16px;">
+        <div class="menu-group mb-14">
+          <div class="menu-row" onclick="Router.go('astro-notification-settings')">
+            <div class="menu-row-icon icon-purple"><i class="bi bi-bell-fill"></i></div>
+            <div class="menu-row-text"><p class="menu-row-title">Notification Settings</p></div>
+            <i class="bi bi-chevron-right menu-row-arrow"></i>
+          </div>
+          <div class="menu-row" onclick="Router.go('legal-doc')">
+            <div class="menu-row-icon icon-blue"><i class="bi bi-shield-lock-fill"></i></div>
+            <div class="menu-row-text"><p class="menu-row-title">Astrologer Code of Ethics</p></div>
+            <i class="bi bi-chevron-right menu-row-arrow"></i>
+          </div>
+          <div class="menu-row" onclick="App.resetDemoData()">
+            <div class="menu-row-icon icon-gold"><i class="bi bi-arrow-counterclockwise"></i></div>
+            <div class="menu-row-text"><p class="menu-row-title">Reset Demo Prototype Data</p></div>
+            <i class="bi bi-chevron-right menu-row-arrow"></i>
+          </div>
+          <div class="menu-row" onclick="ConfirmDialog.open({
+            title: 'Logout of Partner Portal?',
+            message: 'You will be logged out of your astrologer session. Do you wish to continue?',
+            confirmText: 'Logout',
+            onConfirm: () => App.AuthService.logout()
+          })">
+            <div class="menu-row-icon" style="background:rgba(239,68,68,0.2);"><i class="bi bi-box-arrow-right" style="color:#f87171;"></i></div>
+            <div class="menu-row-text"><p class="menu-row-title" style="color:#f87171;">Logout</p></div>
+            <i class="bi bi-chevron-right menu-row-arrow"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    `;
   }
+
 };
