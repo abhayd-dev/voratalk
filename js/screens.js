@@ -22,47 +22,51 @@ const Screens = {
       const isFav = DATA.favourites && DATA.favourites.includes(a.id);
       return `
         <div class="astro-card" onclick="Router.go('astro-profile', {id:'${a.id}'})">
-          <!-- Top Row: Avatar, Info, Status & Price -->
-          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div style="display:flex; gap:12px; flex:1; min-width:0;">
-              <div class="astro-avatar-wrap" style="flex-shrink:0;">
-                <img src="${a.avatar}" class="astro-avatar" alt="${a.name}">
-                <div class="${a.isOnline ? 'online-dot' : 'offline-dot'}"></div>
-              </div>
-              <div class="astro-card-info" style="flex:1; min-width:0;">
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <span class="astro-name" style="font-size:0.95rem; font-weight:700; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${a.name}</span>
+          <!-- Top Row: Avatar on Left, Full Info on Right -->
+          <div style="display:flex; gap:12px; align-items:flex-start;">
+            <!-- Avatar -->
+            <div class="astro-avatar-wrap" style="flex-shrink:0;">
+              <img src="${a.avatar}" class="astro-avatar" alt="${a.name}">
+              <div class="${a.isOnline ? 'online-dot' : 'offline-dot'}"></div>
+            </div>
+
+            <!-- Middle Info Column -->
+            <div class="astro-card-info" style="flex:1; min-width:0;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div style="display:flex; align-items:center; gap:5px; flex:1; min-width:0; padding-right:6px;">
+                  <span class="astro-name" style="font-size:0.92rem; font-weight:700; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${a.name}</span>
                   ${a.verified ? '<i class="bi bi-patch-check-fill verified" style="color:#a78bfa; font-size:0.8rem; flex-shrink:0;"></i>' : ''}
                 </div>
-                <div class="astro-specialty" style="font-size:0.72rem; color:var(--gold); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${a.expertise.slice(0,3).join(' · ')}</div>
-                <div class="astro-lang" style="font-size:0.68rem; color:#9ca3af; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><i class="bi bi-globe me-1"></i>${a.languages.join(', ')}</div>
-                <div class="astro-rating" style="margin-top:6px; display:flex; align-items:center; gap:8px;">
-                  <span style="background:rgba(234,179,8,0.15); color:#eab308; padding:2px 6px; border-radius:4px; font-weight:600; font-size:0.68rem;"><i class="bi bi-star-fill"></i> ${a.rating}</span>
-                  <span style="color:#9ca3af; font-size:0.68rem;"><i class="bi bi-briefcase me-1"></i>${a.experience}</span>
-                </div>
+                <button onclick="App.AstrologerService.toggleFavourite('${a.id}', event)" style="background:none; border:none; color:${isFav ? '#ef4444' : 'rgba(255,255,255,0.35)'}; font-size:1.1rem; cursor:pointer; padding:0; flex-shrink:0;">
+                  <i class="bi bi-heart${isFav ? '-fill' : ''}"></i>
+                </button>
               </div>
-            </div>
-            
-            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0; margin-left:8px;">
-              <button onclick="App.AstrologerService.toggleFavourite('${a.id}', event)" style="background:none; border:none; color:${isFav ? '#ef4444' : 'rgba(255,255,255,0.4)'}; font-size:1.1rem; cursor:pointer; padding:0 2px;">
-                <i class="bi bi-heart${isFav ? '-fill' : ''}"></i>
-              </button>
-              <span class="astro-status-badge ${a.isOnline ? 'astro-status-available' : 'astro-status-offline'}" style="font-size:0.6rem; padding:2px 6px;">
-                ${a.isOnline ? '● Available' : 'Offline'}
-              </span>
-              <div class="astro-prices" style="text-align:right;">
-                <div style="font-size:0.85rem; font-weight:700; color:white;">₹${a.chatRate}<span style="font-size:0.6rem; color:#9ca3af; font-weight:normal;">/min</span></div>
+
+              <div class="astro-specialty" style="font-size:0.7rem; color:var(--gold); margin:2px 0 3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${a.expertise.slice(0,3).join(' · ')}</div>
+              
+              <div class="astro-lang" style="font-size:0.65rem; color:#9ca3af; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                <i class="bi bi-globe me-1"></i>${a.languages.join(', ')}
+              </div>
+
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-top:2px;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="background:rgba(234,179,8,0.15); color:#eab308; padding:1px 6px; border-radius:4px; font-weight:700; font-size:0.65rem;"><i class="bi bi-star-fill"></i> ${a.rating}</span>
+                  <span style="color:#9ca3af; font-size:0.65rem;"><i class="bi bi-briefcase me-1"></i>${a.experience}</span>
+                </div>
+                <span class="astro-status-badge ${a.isOnline ? 'astro-status-available' : 'astro-status-offline'}" style="font-size:0.58rem; padding:2px 6px;">
+                  ${a.isOnline ? '● Available' : 'Offline'}
+                </span>
               </div>
             </div>
           </div>
           
-          <!-- Bottom Action Buttons: Chat & Audio Call ONLY -->
-          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05);">
-            <button class="btn-consult-now" style="background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); color:#4ade80; padding:6px 14px; font-size:0.72rem; border-radius:8px; display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation(); App.BookingService.startBookingFlow('${a.id}', 'call')">
-              <i class="bi bi-telephone-fill"></i> Call (₹${a.callRate}/m)
+          <!-- Bottom Action Buttons: Audio Call & Chat with clean 50/50 split -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06);">
+            <button class="btn-consult-now" style="background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.3); color:#4ade80; padding:7px 8px; font-size:0.72rem; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:5px; font-weight:600;" onclick="event.stopPropagation(); App.BookingService.startBookingFlow('${a.id}', 'call')">
+              <i class="bi bi-telephone-fill"></i> Call <span style="color:white; font-weight:700;">₹${a.callRate}/m</span>
             </button>
-            <button class="btn-consult-now" style="padding:6px 16px; font-size:0.72rem; border-radius:8px; display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation(); App.BookingService.startBookingFlow('${a.id}', 'chat')">
-              <i class="bi bi-chat-fill"></i> Chat (₹${a.chatRate}/m)
+            <button class="btn-consult-now" style="background:linear-gradient(135deg,#5b21b6,#7c3aed); border:none; color:white; padding:7px 8px; font-size:0.72rem; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:5px; font-weight:600;" onclick="event.stopPropagation(); App.BookingService.startBookingFlow('${a.id}', 'chat')">
+              <i class="bi bi-chat-fill"></i> Chat <span style="color:#fef08a; font-weight:700;">₹${a.chatRate}/m</span>
             </button>
           </div>
         </div>
