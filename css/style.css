@@ -99,20 +99,28 @@ img { display: block; max-width: 100%; }
   align-items: center;
   justify-content: center;
   background: #ffffff;
-  padding: 10px;
+  padding: 6px;
   overflow: hidden;
   min-height: 0;
+  /* Purple ambient glow in the background */
+  background: radial-gradient(ellipse at 50% 50%, #f5f0ff 0%, #f0ebff 30%, #ffffff 75%);
 }
 
 /* ── iPhone Frame (height-driven, aspect-ratio locked) ───────── */
 .iphone-frame {
-  /* Perfectly scaled to match 80% zoom compact golden ratio at 100% standard view */
-  height: min(85vh, 730px);
-  aspect-ratio: 375 / 812;
-  max-width: min(90vw, 360px);
+  /*
+   * Goal: at 100% browser zoom, the phone fills the viewport the same
+   * way it does at 80% zoom. At 80% zoom the CSS viewport is ~909px tall,
+   * so the frame was ~730px. At 100% zoom the viewport is ~727px,
+   * so we use calc(100vh - 54px) to subtract only the demo bar.
+   * max-width is uncapped so the aspect ratio drives the width freely.
+   */
+  height: calc(100vh - 54px);
+  aspect-ratio: 390 / 844;
+  max-width: min(46vw, 420px);
   flex-shrink: 0;
   position: relative;
-  filter: drop-shadow(0 25px 60px rgba(124, 58, 237, 0.4));
+  filter: drop-shadow(0 28px 70px rgba(124, 58, 237, 0.45));
 }
 
 .iphone-bezel {
