@@ -16,9 +16,8 @@ AstroVeda is a high-converting, luxury spiritual-tech client demonstration proto
 
 Use the persistent floating bar at the top of the browser screen to switch between:
 
-1. **User App**: Full user journey from Onboarding, Home, Horoscope, Astrologer Marketplace, Detailed Profile, Real-time Chat Consultation (with live timer & spent tracker), Audio Call, Video Call, Kundli SVG Generator, Wallet Recharge, Reports Store, and Review Ratings.
-2. **Astrologer Portal**: Dashboard with online status toggle, earnings analytics, incoming call simulator trigger, and withdrawal management.
-3. **Admin Panel**: Executive dashboard with KPI summary cards, platform revenue breakdown, user status toggles (Block/Unblock), and astrologer withdrawal request approvals.
+1. **User App**: Complete user journey including Mobile Login (10-digit validation), OTP Verification (demo 123456), Onboarding, Home, Horoscope, Astrologer Discovery (search/filter/sort), Astrologer Profile, Real-time Chat Consultation (with live timer, spent tracker, typing indicator & astrologer auto-reply), Audio Call Consultation (with timer, mute/speaker toggles & summary), Booking Checkout with coupon discounts (`WELCOME50`, `FIRSTCALL100`, `ASTRO20`), Wallet Recharge via UPI, Kundli SVG Chart Generator, Matchmaking (36 Gunas), Pooja Booking, and Favourite Astrologers management.
+2. **Astrologer Portal**: Real-time Online/Offline availability toggle (synced directly with user marketplace), incoming consultation queue with Accept/Decline actions, live consultation workspace, and earnings analytics.
 
 ---
 

@@ -1,6 +1,6 @@
 /* ============================================================
    AstroTalkz by vorabion — Router / Navigation Manager
-   Manages screen history, back navigation, and screen rendering
+   Manages screen history, role routing, back navigation & fallbacks
    ============================================================ */
 
 const Router = {
@@ -8,16 +8,25 @@ const Router = {
 
   /* Navigate to a new screen, push to history */
   go(screenId, params = {}) {
+    if (!screenId) return;
     this.history.push({ screenId, params });
     App.render(screenId, params);
   },
 
   /* Go back in history */
   back() {
-    if (this.history.length <= 1) return;
-    this.history.pop();
-    const prev = this.history[this.history.length - 1];
-    App.render(prev.screenId, prev.params);
+    if (this.history.length > 1) {
+      this.history.pop();
+      const prev = this.history[this.history.length - 1];
+      App.render(prev.screenId, prev.params);
+    } else {
+      // Fallback to home or role dashboard
+      if (STATE.role === 'astrologer') {
+        this.reset('astro-dashboard');
+      } else {
+        this.reset('home');
+      }
+    }
   },
 
   /* Replace current screen without adding to history */
@@ -30,7 +39,7 @@ const Router = {
     App.render(screenId, params);
   },
 
-  /* Reset history and start fresh (used on role switch) */
+  /* Reset history and start fresh (used on role switch, login, logout) */
   reset(screenId, params = {}) {
     this.history = [{ screenId, params }];
     App.render(screenId, params);
